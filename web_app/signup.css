@@ -1,0 +1,181 @@
+body{
+    width: 89%;
+    height: min-content;
+    font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica Neue,Arial,Noto Sans,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji,FontAwesome;
+    background-color: rgb(252, 251, 251);
+}
+
+input[type=text]{
+    width: 100%;
+    padding: 12px 20px;
+    margin: 2px 2px;
+    display: inline-block;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+}
+
+select{
+    width: 100%;
+    font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica Neue,Arial,Noto Sans,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji,FontAwesome;
+    padding: 4px 4px 0 4px;
+    margin: 2px 2px;
+    /* display: inline-block; */
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+}
+
+textarea{
+    font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica Neue,Arial,Noto Sans,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji,FontAwesome;
+}
+
+form {
+    width: 200px;
+    text-align: left;
+    padding-bottom: 10%;
+    margin-left: auto;
+    
+}
+
+.signup{
+    width: 80%
+    /* font-size: 0; */
+    vertical-align: middle;
+    white-space: nowrap;
+    display: block;
+    /* background: #5e5e5e; */
+}
+
+button {
+    --antd-wave-shadow-color: #1890ff;
+    --scroll-bar: 0;
+    --primary-background-color: #fff;
+    --secondary-background-color: #fafafa;
+    --contrast-background-color: #fff;
+    --invert-filter: none;
+    --primary-text-color: rgba(0,0,0,.8);
+    --secondary-text-color: rgba(0,0,0,.6);
+    --disabled-text-color: rgba(0,0,0,.25);
+    --error-text-color: #b63e2b;
+    --link-text-color: #2374bb;
+    --link-text-hover-color: #005580;
+    --text-hover-background-color: #f5f5f5;
+    --text-selected-background-color: rgba(0,0,0,.1);
+    --primary-bottom-border-indicator-color: #2374bb;
+    --primary-border-color: rgba(0,0,0,.25);
+    --icon-hover-color: #3a87ad;
+    --icon-color: #6b6b6b;
+    --menu-hover-background-color: #eee;
+    --menu-hover-text-color: rgba(0,0,0,.8);
+    --menu-selected-background-color: #eaf6ff;
+    --menu-selected-text-color: rgba(0,0,0,.8);
+    --notebook-cell-active-border-color: #464644;
+    --notebook-cell-selected-border-color: #9b9b9b;
+    --notebook-cell-editing-border-color: #1b69a0;
+    --notebook-cell-unselected-border-color: rgba(0,0,0,.12);
+    --notebook-cell-hover-border-color: #9b9b9b;
+    --notebook-cell-command-text-active-border-color: rgba(0,0,0,.25);
+    --notebook-cell-button-colors: rgba(0,0,0,.57);
+    --notebook-cell-button-active-color: #3a87ad;
+    --notebook-cell-command-number-text-color: #6b6b6b;
+    --cell-results-text-color: #555;
+    --cell-results-text-hover-color: #eaeaea;
+    --cell-results-command-stage-info-text-color: #6b6b6b;
+    --cell-results-command-job-info-text-color: #333;
+    --notebook-cell-shortcut-text-color: #6b6b6b;
+    --widget-panel-label-text-color: rgba(0,0,0,.68);
+    --topbar-button-hover-background-color: #e6e6e6;
+    --topbar-button-text-hover-color: #005580;
+    --topbar-default-text-color: rgba(0,0,0,.8);
+    --context-bar-border-color: #e6e8ea;
+    --context-bar-attached-cluster-text-color: #333;
+    --context-bar-text-color: rgba(0,0,0,.57);
+    --context-bar-text-hover-color: rgba(0,0,0,.57);
+    --context-bar-icon-active-background-color: rgba(0,0,0,.1);
+    --button-cross-color: #a9a9a9;
+    --button-border-color: #ccc;
+    --button-default-background-color: #f5f5f5;
+    --button-default-background-hover-color: #dcdcdc;
+    --button-default-background-active-color: #cfcfcf;
+    --button-default-background-disabled-color: #e8e8e8;
+    --button-primary-background-color: #2374bb;
+    --button-primary-background-hover-color: #4093db;
+    --button-primary-background-active-color: #195487;
+    --button-active-text-color: rgba(0,0,0,.8);
+    --button-primary-text-color: #fff;
+    --button-danger-background-color: #db1905;
+    --button-danger-text-color: #fff;
+    --button-success-background-color: #2e7d32;
+    --button-success-text-color: rgba(0,0,0,.8);
+    --markdown-default-text-color: rgba(0,0,0,.8);
+    --markdown-code-font-color: #333;
+    --markdown-code-background-color: #f6f8fa;
+    --code-hint-selected-background-color: #64c3ff;
+    --code-hint-type-background-color: #f0f8ff;
+    --keyboard-shortcut-background-color: #f5f5f5;
+    --keyboard-shortcut-command-text-color: #d0011b;
+    --modal-footer-box-shadow-color: #fff;
+    --modal-border-color: #eee;
+    --plot-options-li-background-color: #cedff0;
+    --comment-background-color: rgba(255,227,78,.5);
+    --highlight-background-color: #f9edbe;
+    --history-notice-background-color: #eaf6ff;
+    --history-notice-text-color: rgba(0,0,0,.8);
+    --history-diff-delete-color: hsla(0,100%,93%,.5);
+    --history-diff-insert-color: rgba(201,253,197,.5);
+    --find-replace-match-color: #ff0;
+    --find-replace-current-match-color: #ff961d;
+    --graph-background-color: #fff;
+    --ansi-black-fg: #000;
+    --ansi-red-fg: darkred;
+    --ansi-green-fg: #006400;
+    --ansi-yellow-fg: brown;
+    --ansi-blue-fg: #00008b;
+    --ansi-purple-fg: #9400d3;
+    --ansi-cyan-fg: #4682b4;
+    --ansi-gray-fg: gray;
+    --ansi-black-bg: #000;
+    --ansi-red-bg: red;
+    --ansi-green-bg: green;
+    --ansi-yellow-bg: #ff0;
+    --ansi-blue-bg: #4682b4;
+    --ansi-purple-bg: #f0f;
+    --ansi-cyan-bg: cyan;
+    --ansi-gray-bg: gray;
+    --filetree-primary-text-color: #6b6b6b;
+    --filetree-background-color: #fff;
+    --filetree-hover-background-color: #f5f5f5;
+    --filetree-selected-background-color: #eee;
+    --filetree-header-background-color: #f5f5f5;
+    --filetree-header-text-color: #464644;
+    --filetree-caret-text-color: #464644;
+    --filetree-caret-hover-text-color: #005580;
+    --filetree-highlight-background-color: #ff8;
+    -webkit-appearance: button;
+    font-weight: 400;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    display: inline-block;
+    text-align: center;
+    vertical-align: middle;
+    border-radius: 6px;
+    background-repeat: repeat-x;
+    margin: 0;
+    background-color: var(--button-primary-background-color);
+    background-image: none;
+    box-shadow: none;
+    color: var(--button-primary-text-color);
+    filter: none;
+    opacity: 1;
+    text-shadow: unset;
+    font-size: 15px;
+    height: auto;
+    line-height: 20px;
+    margin-bottom: 15px;
+    padding: 7px 9px;
+    width: 100%;
+}
+  
+  /* Add a hover effect for buttons */
+  button:hover {
+    opacity: 0.8;
+}
