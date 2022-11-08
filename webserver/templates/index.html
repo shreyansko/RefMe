@@ -1,17 +1,18 @@
 <html>
     <head>
-        <!-- <div>
-            <h1> Welcome to touchstone </h1>
-        </div> -->
+
 
     </head>
     <body>
-        <link rel="stylesheet" href="login.css">
+        <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/index.css') }}">
+
+        
         <div id = "login-page"> 
 
-       
+          
             <div class="imgcontainer"> 
-                <img src="www/touch.png" alt="touchstone" height= "136px" width= "500px"> 
+               
+                <img src= "{{ url_for('static',filename='images/touch.png') }}" alt="touchstone" height= "136px" width= "500px"> 
             </div>
 
             
