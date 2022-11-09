@@ -192,7 +192,7 @@ def add():
   interests = request.form['userinterests']
   user_group = request.form['user_group']
   print(fname, lname, contact_info, desc, interests, user_group)
-  cmd = 'INSERT INTO test(first_name, surname,contact_info,description,interests,user_group) VALUES (:fname), (:lname), (:contact_info), (:desc), (:interests), (:user_group)';
+  cmd = 'INSERT INTO test(first_name, surname, contact_info, description, interests, user_group) VALUES ((:fname), (:lname), (:contact_info), (:desc), (:interests), (:user_group))';
   g.conn.execute(text(cmd), fname = fname, lname = lname, contact_info = contact_info, desc = desc, interests = interests, user_group = user_group);
   return redirect('/') ## Input next page link
 
