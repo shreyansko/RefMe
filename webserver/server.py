@@ -18,7 +18,7 @@ Read about it online.
 import os
 from sqlalchemy import *
 from sqlalchemy.pool import NullPool
-from flask import Flask, request, render_template, g, redirect, Response
+from flask import Flask, request, render_template, g, redirect, Response, flash
 import re
 
 tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
@@ -44,6 +44,8 @@ DB_SERVER = "w4111.cisxo09blonu.us-east-1.rds.amazonaws.com"
 
 DATABASEURI = "postgresql://"+DB_USER+":"+DB_PASSWORD+"@"+DB_SERVER+"/proj1part2"
 
+SECRET_KEY = os.urandom(32)
+app.config['SECRET_KEY'] = SECRET_KEY
 #%% 
 #
 # This line creates a database engine that knows how to connect to the URI above
@@ -122,6 +124,23 @@ def index():
 
   return render_template("index.html")
 
+@app.route('/login', methods=['POST'])
+def login_user():
+  username = request.form['uname']
+  password = request.form['psw']
+  cmd = 'SELECT COUNT(*) FROM users WHERE user_id = (:username) AND first_name = (:password)';
+  cnt = g.conn.execute(text(cmd), username = username, password = password);
+  cnt = cnt.fetchall()
+  cnt = cnt[0][0]
+  print(cnt)
+  if cnt == 0:
+    flash('Invalid Username or Password')
+    return redirect('/') ## Input next page link
+  elif cnt == 1:
+    flash('Redirecting')
+    return redirect('/feed.html')
+
+
 
 @app.route('/signup.html')
 def signup():
@@ -129,14 +148,14 @@ def signup():
 
 @app.route('/feed.html')
 def feed():
-  cursor = g.conn.execute("SELECT first_name, last_name, contact_info FROM users")
+  cursor = g.conn.execute("SELECT first_name, last_name, description FROM users")
   first_name_lst = []
   last_name_lst = []
-  contact = []
+  desc = []
   for obj in cursor:
     first_name_lst.append(obj[0])
     last_name_lst.append(obj[1])
-    contact.append(obj[2])
+    desc.append(obj[2])
   cursor.close()
   
   first_name_lst = [re.sub('_', ' ', obj) for obj in first_name_lst]
@@ -145,8 +164,8 @@ def feed():
     names.append(first + " " + last)
   
   data = []
-  for name, email in zip(names, contact):
-    data.append({'name': name, 'email': email, 'img': "https://xsgames.co/randomusers/assets/avatars/pixel/" + str(names.index(name))+ ".jpg"})
+  for name, bio in zip(names, desc):
+    data.append({'name': name, 'bio': bio, 'img': "https://xsgames.co/randomusers/assets/avatars/pixel/" + str(names.index(name))+ ".jpg"})
 
   return render_template("feed.html", data  = data)
 
