@@ -14,11 +14,14 @@ table, th, td {
 
 <body>
   <form method="POST">
-    Tools/Programming languages:
+    Choose one tools/programming language you are most confident in:
 
       {{ form.csrf_token }}
       {{ form.tool }}
-    
+  <button> Save </button>
+  </form>
+
+  <form method="POST">
     <br/><br/>
 
     Choose a positions at given company you are interested in:
@@ -70,7 +73,7 @@ table, th, td {
 
 
 <button><a style="text-decoration: none;" href="/">Previous</a></button>
-<button><a style="text-decoration: none;" href="/">Continue</a></button>
+<button><a style="text-decoration: none;" href="/complete_signup">Complete Signup</a></button>
 
 </body>
 
