@@ -133,7 +133,7 @@ def index():
 def login_user():
   username = request.form['uname']
   password = request.form['psw']
-  cmd = 'SELECT COUNT(*) FROM users WHERE user_id = (:username) AND first_name = (:password)';
+  cmd = 'SELECT COUNT(*) FROM users WHERE user_id = (:username) AND password = (:password)';
   cnt = g.conn.execute(text(cmd), username = username, password = password);
   cnt = cnt.fetchall()
   cnt = cnt[0][0]
