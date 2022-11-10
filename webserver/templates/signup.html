@@ -7,6 +7,22 @@
 
             <form method="POST" width = auto margin = auto action ="/add">
             <div class="container" width = auto>
+                <label for="username">Username:</label><br>
+                <!-- <label for="uname"><b>Username</b></label> -->
+                <input id ="username" type="text" placeholder="Username" name="username-user" required value>
+            </div><br>
+            {% for mesg in data %}
+                <h3>{{ mesg }}</h3>
+                {% endfor %}
+            <div class="container" width = auto>
+                <label for="pswd">Password:</label><br>
+                <!-- <label for="uname"><b>Username</b></label> -->
+                <input id ="pswd" type="password" placeholder="Password" name="password-user" required value><br><br>
+                <label for="verifypswd">Verify password:</label><br>
+                <!-- <label for="uname"><b>Username</b></label> -->
+                <input id ="verifypswd" type="password" placeholder="Password" name="verify-password-user" required value>
+            </div><br>
+            <div class="container" width = auto>
                 <label for="fname">First name:</label><br>
                 <!-- <label for="uname"><b>Username</b></label> -->
                 <input id ="fname" type="text" placeholder="First Name" name="firstname-user" required value>

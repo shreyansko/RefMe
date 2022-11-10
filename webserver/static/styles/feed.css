@@ -65,6 +65,7 @@
       border: 1px solid #ccc;
     }
   }
+
   
   .filter{
     border:1px solid black;
@@ -98,6 +99,7 @@
       grid-gap: .7rem;
       align-items: center;
       position:relative;
+      
       /* absolute; */
 
   & > * {
@@ -123,7 +125,25 @@
     
     p {
       font-size: .7rem;
+      overflow: hidden;
+      
     }
   }
     
+}
+
+.user_img{
+  padding: 10;
+  position:fixed;
+  float: left;
+  width: 20%;
+}
+
+.user_info{
+  float: right;
+  padding-left: 10%;
+  width: 80%;
+  text-overflow: " [..]";
+  white-space: pre-line;
+  overflow-wrap: break-word;
 }
