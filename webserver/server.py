@@ -146,7 +146,7 @@ def feed():
   
   data = []
   for name, email in zip(names, contact):
-    data.append({'name': name, 'email': email, 'img': "https://randomuser.me/api/portraits/men/" + str(names.index(name))+ ".jpg"})
+    data.append({'name': name, 'email': email, 'img': "https://xsgames.co/randomusers/assets/avatars/pixel/" + str(names.index(name))+ ".jpg"})
 
   return render_template("feed.html", data  = data)
 
@@ -168,9 +168,9 @@ def add():
   g.conn.execute(text(cmd), fname = fname, lname = lname, contact_info = contact_info, desc = desc, interests = interests, user_group = user_group);
 
   if user_group == 'Student':
-    return redirect('/student_signup.thml') ## Input next page link
+    return redirect('/student_signup.html') ## Input next page link
   elif user_group == 'Employee':
-    return redirect('/employee_signup.thml')
+    return redirect('/employee_signup.html')
 
 
 @app.route('/login')
