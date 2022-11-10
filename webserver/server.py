@@ -59,12 +59,18 @@ engine = create_engine(DATABASEURI)
 # Here we create a test table and insert some values in it
 engine.execute("""DROP TABLE IF EXISTS test;""")
 engine.execute("""CREATE TABLE IF NOT EXISTS user_tmp (
-  first_name text,
-  surname text,
-  contact_info text,
-  description text,
-  interests text,
-  user_group text
+    user_id varchar PRIMARY KEY,
+    password varchar,
+    first_name text,
+    last_name text,
+    contact_info text,
+    description text,
+    interests text,
+    user_group text,
+    skills varchar,
+    position varchar,
+    company_id int,
+    FOREIGN KEY (company_id) REFERENCES Company(company_id)
 );""")
 # engine.execute("""INSERT INTO test(first_name, surname,contact_info,description,interests,user_group) VALUES ('grace hopper'), ('alan turing'), ('ada lovelace');""")
 
