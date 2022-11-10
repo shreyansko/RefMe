@@ -21,6 +21,11 @@ from sqlalchemy.pool import NullPool
 from flask import Flask, request, render_template, g, redirect, Response
 import re
 
+from flask import Flask, request, render_template, g, redirect, Response, jsonify, url_for
+
+from flask_wtf import FlaskForm
+from wtforms import SelectField
+
 tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 app = Flask(__name__, template_folder=tmpl_dir)
 
@@ -178,6 +183,298 @@ def login():
     abort(401)
     this_is_never_executed()
 
+
+class PositionForm(FlaskForm):
+    company_name = SelectField('company_name', choices = [])
+    position_title = SelectField('position_title', choices=[])
+    tool = SelectField('tools', choices=[])
+
+
+def populate_form(form):
+    skills_list = ['Python', 'Java', 'C++', 'C', 'C#', 'UI/UX design','Data Analysis',
+                    'Machine Learning', 'Data Engineering', 'Data Visualization', 'Video Editing',
+                    'CRMs','Cloud Computing','Big Data', 'Data Science']
+    skills_list.sort()
+    skills_list.insert(0,None)
+
+    # get position data
+    q="""
+        SELECT a.position_title
+        , a.company_id
+        , b.company_name
+        FROM Position a
+        inner join Company b on a.company_id=b.company_id
+        ;
+        """
+
+    cursor_p = g.conn.execute(q)
+    positions_list = cursor_p.fetchall()
+
+    company_set = set([(position_t['company_id'], position_t['company_name']) for position_t in positions_list])
+    form.company_name.choices = [(0, None)] + sorted(list(company_set))
+    form.position_title.choices = [None] + [(position_t['position_title']) for position_t in positions_list]
+    form.tool.choices = skills_list
+
+    return form
+
+@app.route("/student_signup", methods=['GET','POST'])
+def student_signup():
+
+    user_id = request.args['user_id']
+    
+    form = PositionForm()
+    form = populate_form(form)
+    
+    if request.method=='POST':
+        pos = form.position_title.data
+        company = form.company_name.data
+        tool = form.tool.data
+
+        q_insert_skill = f"""
+        INSERT INTO StudentInterestTemp(user_id, position_title, company_id) VALUES (
+            '{user_id}',
+            '{pos}',
+            {company}
+        )
+        """
+
+        q_insert_interest = f"""
+        INSERT INTO StudentTemp(user_id, skills) VALUES(
+            '{user_id}',
+            '{tool}'
+        )
+        """
+
+        try:
+            g.conn.execute(q_insert_skill)
+        except:
+            pass
+        
+        try:
+            g.conn.execute(q_insert_interest)
+        except:
+            pass
+
+        q_fetch_interest = f"""
+        SELECT a.position_title, b.company_name
+        FROM StudentInterestTemp a
+        INNER JOIN Company b on a.company_id = b.company_id 
+
+        where user_id = '{user_id}'
+        ;
+        """
+        cursor = g.conn.execute(q_fetch_interest)
+        recorded_interests= cursor.fetchall()
+
+
+        return render_template("student_signup.html", form = form, recorded_interests=recorded_interests)
+
+    return render_template("student_signup.html", form = form)
+
+
+@app.route('/position_title/<company_id>')
+def position_title(company_id):
+    position =  q="""
+                    SELECT 
+                        a.position_title
+                    FROM Position a
+                    where company_id={}
+                    ;
+                    """.format(company_id)
+    titles = g.conn.execute(q).fetchall()
+
+    posArray = []
+    for title in titles:
+        title_elem = {}
+        title_elem['title'] = title.position_title
+        posArray.append(title_elem)
+
+    return jsonify({'position_title': posArray})
+
+
+@app.route("/employee_signup", methods=['GET','POST'])
+def employee_signup():
+
+    user_id = request.args['user_id']
+
+    # fetch a list of available companies
+    cursor = g.conn.execute('SELECT company_name, company_id FROM company;') 
+    company_list = cursor.fetchall()
+
+    if request.method=='POST':
+        pos = request.form.get('position')
+        company_id = request.form.get('company_list')
+
+        q_insert_employee = f"""
+        INSERT INTO EmployeeTemp(user_id, position, company_id) VALUES (
+            '{user_id}',
+            '{pos}',
+            {company_id}
+        )
+        """        
+        try:
+            g.conn.execute(q_insert_employee)
+        except:
+            pass
+
+        return redirect(url_for('index'))
+
+    return render_template("employee_signup.html",company_list=company_list)
+
+
+
+@app.route("/save_interest", methods=['POST'])
+def save_interest():
+
+    user_id = request.form.get('user_id')
+    pos = request.form.get('position_title')
+    company = request.form.get('company_name')
+
+    q_insert_skill = f"""
+        INSERT INTO Student_Interest(student_id, position_title, company_id)
+            Select student_id,
+            '{pos}',
+            {company}
+            from users u
+            where user_id='{user_id}' 
+    """
+
+    try:
+        g.conn.execute(q_insert_skill)
+    except:
+        pass
+
+    return redirect(request.referrer)
+
+
+@app.route("/save_profile", methods=['POST'])
+def save_profile():
+
+    user_id = request.form.get('user_id')
+    first_name = request.form.get('first_name')
+    last_name = request.form.get('last_name')
+    contact_info = request.form.get('contact_info')
+    description = request.form.get('description')
+    # replace a single quote with double quote
+    description = (description.replace("'","''")).strip()
+
+    q_update_profile = f"""
+        UPDATE Users
+        SET first_name='{first_name}'
+            , last_name='{last_name}'
+            , contact_info='{contact_info}'
+            , description='{description}'
+        WHERE user_id='{user_id}'
+        ;
+    """
+
+    try:
+        g.conn.execute(q_update_profile)
+    except:
+        pass
+
+    return redirect(request.referrer)
+
+
+@app.route("/student_profile", methods=['GET','POST'])
+def student_profile():
+
+    user_id = request.args['user_id']
+
+    form = PositionForm()
+    form = populate_form(form)
+
+    q_basic_info = f"""        
+        select a.user_id
+            , a.student_id
+            , a.employee_id        
+            , a.first_name
+            , a.last_name
+            , a.contact_info
+            , b.school_name
+            , s.skills
+            , c.company_name
+            , e.position
+            , a.description
+        from users a
+        inner join school b on a.school_id = b.school_id
+        left join student s on s.user_id = a.user_id
+        left join employee e on e.user_id = a.user_id
+        left join company c on c.company_id = e.company_id
+        where a.user_id='{user_id}'
+        ;
+    """
+
+    cursor = g.conn.execute(q_basic_info)
+    profile_info = cursor.fetchall()
+
+    q_refer_information = f"""
+            select 
+                c.position_title
+                , co.company_name
+            from users a 
+            inner join student b on a.user_id = b.user_id
+            inner join student_interest c on b.student_id = c.student_id
+            inner join company co on co.company_id = c.company_id
+            where a.user_id='{user_id}'
+    """
+
+    cursor = g.conn.execute(q_refer_information)
+    job_info = cursor.fetchall()
+
+    return render_template("student_profile.html", profile_info=profile_info, job_info=job_info, form=form, user_id=user_id)
+
+
+@app.route("/employee_profile", methods=['GET','POST'])
+def employee_profile():
+
+    user_id = request.args['user_id']
+
+    form = PositionForm()
+    form = populate_form(form)
+
+    q_basic_info = f"""        
+        select a.user_id
+            , a.student_id
+            , a.employee_id        
+            , a.first_name
+            , a.last_name
+            , a.contact_info
+            , b.school_name
+            , s.skills
+            , c.company_name
+            , e.position
+            , a.description
+        from users a
+        inner join school b on a.school_id = b.school_id
+        left join student s on s.user_id = a.user_id
+        left join employee e on e.user_id = a.user_id
+        left join company c on c.company_id = e.company_id
+        where a.user_id='{user_id}'
+        ;
+    """
+
+    cursor = g.conn.execute(q_basic_info)
+    profile_info = cursor.fetchall()
+
+    q_refer_information = f"""
+            SELECT s.user_id as referred_user
+            , r.position_title
+            , c.company_name
+        from refer r
+        inner join employee e on r.employee_id = e.employee_id
+        inner join users u_emp on u_emp.user_id = e.user_id
+        inner join company c on r.company_id = c.company_id
+
+        left join student s on s.student_id = r.student_id
+        left join users u on u.user_id = s.user_id
+        where u_emp.user_id='{user_id}'
+        """
+    cursor = g.conn.execute(q_refer_information)
+    job_info = cursor.fetchall()
+
+
+    return render_template("employee_profile.html", profile_info = profile_info, job_info = job_info, form=form, user_id=user_id)
 
 if __name__ == "__main__":
   import click

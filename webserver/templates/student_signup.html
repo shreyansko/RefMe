@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<style>
+table, th, td {
+  border: 1px solid black;
+}
+</style>
+</head>
+
+<h1>
+    THIS IS A STUDENT SIGNUP PAGE
+</h1>
+
+<body>
+  <form method="POST">
+    Tools/Programming languages:
+
+      {{ form.csrf_token }}
+      {{ form.tool }}
+    
+    <br/><br/>
+
+    Choose a positions at given company you are interested in:
+    <br/><br/>
+    {{ form.csrf_token }}
+    {{ form.company_name }}
+    {{ form.position_title }}
+
+    <button> Add </button>
+    <br/><br/>
+
+  </form>
+
+  <script>
+      let company_select = document.getElementById('company_name');
+      let position_select = document.getElementById('position_title');
+
+      company_select.onchange = function(){
+          company = company_select.value;
+          
+          fetch('/position_title/' + company).then(function(response){
+            response.json().then(function(data){
+              let optionHTML ='';
+
+              for (let position of data.position_title){
+                optionHTML += '<option value="' + position.title + '">' + position.title + '</option>';
+              }
+              position_select.innerHTML = optionHTML;
+            });
+          });
+      }
+
+  </script>
+
+  <h3> Interested positions: </h3>
+    <table>
+      <tr>
+        <th>Company</th>
+        <th>Interested positions</th>
+      <tr>
+    <tr>
+    {% for r in recorded_interests %}
+      <td>{{ r.company_name }}</td>
+      <td>{{ r.position_title }}</td>
+    </tr>
+    {% endfor %}
+
+    </table>
+
+
+<button><a style="text-decoration: none;" href="/">Previous</a></button>
+<button><a style="text-decoration: none;" href="/">Continue</a></button>
+
+</body>
+
+</html>
