@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<style>
+table, th, td {
+  border: 1px solid black;
+}
+</style>
+
+
+<h1>
+    THIS IS A USER PROFILE PAGE
+</h1>
+
+<button><a style="text-decoration: none;" href="/">Exit</a></button>
+<form action="/save_profile" method="post">
+
+  <p id="profile_info" name="profile_info">
+
+    {% for p in profile_info %}
+      User Id: {{user_id}}
+      <input type="hidden" name="user_id" id="user_id" value="{{ user_id }}">
+
+      <br></br>
+
+      First Name: <input id="first_name" name = "first_name" value={{p.first_name}}> 
+      <br></br>
+
+      Last Name: <input id="last_name" name = "last_name" value={{p.last_name}}>
+      <br></br>
+
+      Contact Info: <input id="contact_info" name = "contact_info" value={{p.contact_info}}>
+      <br></br>
+
+      School name: {{p.school_name}}
+      <br></br>
+
+      Description:
+      <br></br>
+      <textarea id="description" name="description" rows="4" cols="50">
+      {{p.description}}
+      </textarea>
+      <br></br>
+
+    {% endfor %}
+</p>
+<input type="submit" value="Save change"> 
+</form>
+
+
+<br></br>
+
+<form action='/save_interest' method="POST">
+
+    <input type="hidden" name="user_id" id="user_id" value="{{ user_id }}">
+    Add additional positions at given company you are interested in:
+    <br/><br/>
+    {{ form.csrf_token }}
+    {{ form.company_name }}
+    {{ form.position_title }}
+
+    <input type="submit" value="Add"> 
+
+    <br/><br/>
+
+  </form>
+
+  <script>
+      let company_select = document.getElementById('company_name');
+      let position_select = document.getElementById('position_title');
+
+      company_select.onchange = function(){
+          company = company_select.value;
+          
+          fetch('/position_title/' + company).then(function(response){
+            response.json().then(function(data){
+              let optionHTML ='';
+
+              for (let position of data.position_title){
+                optionHTML += '<option value="' + position.title + '">' + position.title + '</option>';
+              }
+              position_select.innerHTML = optionHTML;
+            });
+          });
+      }
+
+  </script>
+
+<p id="job_info" name="job_info">
+    <table>
+      <tr>
+        <th>Company</th>
+        <th>Interested positions</th>
+      <tr>
+    <tr>
+    {% for j in job_info %}
+      <td>{{ j.company_name }}</td>
+      <td>{{ j.position_title }}</td>
+    </tr>
+    {% endfor %}
+
+    </table>
+
+</p>
+
+</html>

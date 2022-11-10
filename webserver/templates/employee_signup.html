@@ -1,0 +1,18 @@
+<h1>
+    THIS IS A EMPLOYEE SIGNUP PAGE
+</h1>
+
+<form method="post">
+  Company:
+  <select id="company_list" name="company_list">
+    {% for i in company_list %}
+    <option value={{i.company_id}}>{{ i.company_name }}</option>
+    {% endfor %}
+  </select>
+  <br></br>
+  Position <input id="position" name = "position">
+  <br></br>
+  
+  <input type="submit" values="Submit">
+
+</form>
