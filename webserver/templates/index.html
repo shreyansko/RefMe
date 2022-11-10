@@ -18,6 +18,9 @@
             
     
             <form action="/login" method="post" width = auto margin = auto>
+                {% for mesg in data %}
+                <h1>{{ mesg }}</h1>
+                {% endfor %}
             
                 <div class = "tab-child">
 

@@ -18,7 +18,7 @@ Read about it online.
 import os
 from sqlalchemy import *
 from sqlalchemy.pool import NullPool
-from flask import Flask, request, render_template, g, redirect, Response, flash
+from flask import Flask, request, render_template, g, redirect, Response, flash, session
 import re
 
 from flask import Flask, request, render_template, g, redirect, Response, jsonify, url_for
@@ -139,10 +139,9 @@ def login_user():
   cnt = cnt[0][0]
   print(cnt)
   if cnt == 0:
-    flash('Invalid Username or Password')
-    return redirect('/') ## Input next page link
+    data = ["Invalid username or password!"]
+    return render_template('index.html', data = data) ## Input next page link
   elif cnt == 1:
-    flash('Redirecting')
     return redirect('/feed.html')
 
 
@@ -153,6 +152,7 @@ def signup():
 
 @app.route('/feed.html')
 def feed():
+  
   cursor = g.conn.execute("SELECT first_name, last_name, description FROM users")
   first_name_lst = []
   last_name_lst = []
@@ -175,26 +175,34 @@ def feed():
   return render_template("feed.html", data  = data)
 
 
+
 # Example of adding new data to the database
 @app.route('/add', methods=['POST'])
 def add():
+  username = request.form['username-user']
+  password = request.form['password-user']
+  verify_pass = request.form['verify-password-user']
   fname = request.form['firstname-user']
   lname = request.form['lastname-user']
   contact_info = request.form['contact-user']
   desc = request.form['bio-user']
   interests = request.form.getlist('userinterests')
-  print("______________")
-  print(interests)
-  print("______________")
-  user_group = request.form['user_group']
-  print(fname, lname, contact_info, desc, interests, user_group)
-  cmd = 'INSERT INTO user_tmp(first_name, surname, contact_info, description, interests, user_group) VALUES ((:fname), (:lname), (:contact_info), (:desc), (:interests), (:user_group))';
-  g.conn.execute(text(cmd), fname = fname, lname = lname, contact_info = contact_info, desc = desc, interests = interests, user_group = user_group);
-
-  if user_group == 'Student':
-    return redirect('/student_signup.html') ## Input next page link
-  elif user_group == 'Employee':
-    return redirect('/employee_signup.html')
+  if password != verify_pass:
+    data = ["Passwords do not match! Try again..."]
+    return render_template('signup.html', data = data)
+  else:
+    user_group = request.form['user_group']
+    # print(fname, lname, contact_info, desc, interests, user_group)
+    cmd = 'INSERT INTO user_tmp(user_id, password, first_name, last_name, contact_info, description, interests, user_group, skills, position, company_id) VALUES ((:username), (:password), (:fname), (:lname), (:contact_info), (:desc), (:interests), (:user_group), (:skills), (:position), (:company))';
+    g.conn.execute(text(cmd), username = username, password = password, fname = fname, lname = lname, contact_info = contact_info, desc = desc, interests = interests, user_group = user_group, skills = None, position = None, company = None);
+    
+    session['userid'] = username
+    print("Session userid:", session['userid'])
+    
+    if user_group == 'Student':
+      return redirect(url_for('student_signup')) ## Input next page link
+    elif user_group == 'Employee':
+      return redirect(url_for('employee_signup'))
 
 
 @app.route('/login')
@@ -238,8 +246,7 @@ def populate_form(form):
 
 @app.route("/student_signup", methods=['GET','POST'])
 def student_signup():
-
-    user_id = request.args['user_id']
+    user_id = session['userid']
     
     form = PositionForm()
     form = populate_form(form)
@@ -314,7 +321,7 @@ def position_title(company_id):
 @app.route("/employee_signup", methods=['GET','POST'])
 def employee_signup():
 
-    user_id = request.args['user_id']
+    user_id = session['userid']
 
     # fetch a list of available companies
     cursor = g.conn.execute('SELECT company_name, company_id FROM company;') 
