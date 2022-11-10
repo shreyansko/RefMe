@@ -116,6 +116,7 @@ def teardown_request(exception):
 #
 @app.route('/')
 def index():
+  session.clear()
   """
   request is a special object that Flask provides to access web request information:
 
@@ -137,6 +138,7 @@ def login_user():
   cnt = g.conn.execute(text(cmd), username = username, password = password);
   cnt = cnt.fetchall()
   cnt = cnt[0][0]
+  session['userid'] = username
   print(cnt)
   if cnt == 0:
     data = ["Invalid username or password!"]
@@ -152,27 +154,72 @@ def signup():
 
 @app.route('/feed.html')
 def feed():
-  
-  cursor = g.conn.execute("SELECT first_name, last_name, description FROM users")
-  first_name_lst = []
-  last_name_lst = []
-  desc = []
-  for obj in cursor:
-    first_name_lst.append(obj[0])
-    last_name_lst.append(obj[1])
-    desc.append(obj[2])
-  cursor.close()
-  
-  first_name_lst = [re.sub('_', ' ', obj) for obj in first_name_lst]
-  names = []
-  for first, last in zip(first_name_lst, last_name_lst):
-    names.append(first + " " + last)
-  
+  q = 'SELECT student_id, employee_id FROM users WHERE user_id = (:userid)';
+  user_group = g.conn.execute(text(q), userid = session['userid']); #session['userid']
+  user_group = user_group.fetchall()
   data = []
-  for name, bio in zip(names, desc):
-    data.append({'name': name, 'bio': bio, 'img': "https://xsgames.co/randomusers/assets/avatars/pixel/" + str(names.index(name))+ ".jpg"})
-
+  # If the user is a student
+  if user_group[0][0] == 1:
+    session['user_group'] = 'Student'
+    cursor = g.conn.execute("SELECT  u.first_name, u.last_name, u.description, e.position, c.company_name FROM employee e LEFT JOIN users u ON e.employee_id = u.employee_id LEFT JOIN company c ON e.company_id = c.company_id;")
+    first_name_lst = []
+    last_name_lst = []
+    desc = []
+    position = []
+    company = []
+    for obj in cursor:
+      first_name_lst.append(obj[0])
+      last_name_lst.append(obj[1])
+      desc.append(obj[2])
+      position.append(obj[3])
+      company.append(obj[4])
+    cursor.close()
+    
+    first_name_lst = [re.sub('_', ' ', obj) for obj in first_name_lst]
+    names = []
+    for first, last in zip(first_name_lst, last_name_lst):
+      names.append(first + " " + last)
+    pos_key = "Position"
+    co_key = "Company"
+    
+    for name, bio, pos, co in zip(names, desc, position, company):
+      data.append({'name': name, 'bio': bio, 
+                   'img': "https://xsgames.co/randomusers/assets/avatars/pixel/" + str(names.index(name))+ ".jpg",
+                   'position': pos, 'company':co, 'pos_key': pos_key, 'co_key': co_key})
+  
+  
+  # If user is an employee
+  elif user_group[0][0] == None:
+    session['user_group'] = 'Employee'
+    cursor = g.conn.execute("SELECT  u.first_name, u.last_name, u.description, s.skills, sl.school_name FROM student s LEFT JOIN users u ON s.student_id = u.student_id LEFT JOIN school sl ON u.school_id = sl.school_id;")
+    first_name_lst = []
+    last_name_lst = []
+    desc = []
+    position = []
+    company = []
+    for obj in cursor:
+      first_name_lst.append(obj[0])
+      last_name_lst.append(obj[1])
+      desc.append(obj[2])
+      position.append(obj[3])
+      company.append(obj[4])
+    cursor.close()
+    
+    first_name_lst = [re.sub('_', ' ', obj) for obj in first_name_lst]
+    names = []
+    for first, last in zip(first_name_lst, last_name_lst):
+      names.append(first + " " + last)
+    
+    pos_key = "Skills"
+    co_key = "School"
+    
+    for name, bio, pos, co in zip(names, desc, position, company):
+      data.append({'name': name, 'bio': bio, 
+                   'img': "https://xsgames.co/randomusers/assets/avatars/pixel/" + str(names.index(name))+ ".jpg",
+                   'position': pos, 'company':co, 'pos_key': pos_key, 'co_key': co_key})
+  
   return render_template("feed.html", data  = data)
+    
 
 
 

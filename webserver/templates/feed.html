@@ -3,7 +3,7 @@
     <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/feed.css') }}">
     <div class="topnav">
         <a class="active" href="#feed">Feed</a>
-        <a href="profile.html">Profile</a>
+        <a href="#" onclick="profileFunction();">Profile</a>
         <input type="text" placeholder="Search keywords...">
         <button id = "logOut" type="button" class="float-left submit-button">Log Out</button>
       </div>
@@ -22,7 +22,8 @@
             </div>
             <div class = "user_info">
                 <p><h3>{{item.name}}</h3></p>
-                <p> {{item.bio}}</p>
+                <p>{{item.co_key}}: {{item.company}} </p>
+                <p> {{item.pos_key}}: {{item.position}} </p>
             </div>
         </div>
         {% endfor %}
@@ -30,9 +31,19 @@
      </div>
 
 
-  </html>
-  <script type="text/javascript">
+ 
+  <script>
     document.getElementById("logOut").onclick = function () {
         location.href = "/";
     };
+
+    function profileFunction(){
+        if ('{{session.user_group}}' === 'Employee') {
+            window.location.href = "employee_profile.html"
+        } else if  ('{{session.user_group}}' === 'Student') {
+            window.location.href = "student_profile.html"
+        };
+        
+    };
 </script>
+</html>
