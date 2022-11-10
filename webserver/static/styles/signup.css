@@ -45,7 +45,7 @@ form {
     /* background: #5e5e5e; */
 }
 
-button {
+input[type = submit]{
     --antd-wave-shadow-color: #1890ff;
     --scroll-bar: 0;
     --primary-background-color: #fff;
@@ -176,6 +176,6 @@ button {
 }
   
   /* Add a hover effect for buttons */
-  button:hover {
+input[type = submit]:hover {
     opacity: 0.8;
 }

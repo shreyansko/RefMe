@@ -1,5 +1,5 @@
 #!/usr/bin/env python2.7
-
+#%% 
 """
 Columbia W4111 Intro to databases
 Example webserver
@@ -19,6 +19,7 @@ import os
 from sqlalchemy import *
 from sqlalchemy.pool import NullPool
 from flask import Flask, request, render_template, g, redirect, Response
+import re
 
 tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 app = Flask(__name__, template_folder=tmpl_dir)
@@ -43,7 +44,7 @@ DB_SERVER = "w4111.cisxo09blonu.us-east-1.rds.amazonaws.com"
 
 DATABASEURI = "postgresql://"+DB_USER+":"+DB_PASSWORD+"@"+DB_SERVER+"/proj1part2"
 
-
+#%% 
 #
 # This line creates a database engine that knows how to connect to the URI above
 #
@@ -52,7 +53,7 @@ engine = create_engine(DATABASEURI)
 
 # Here we create a test table and insert some values in it
 engine.execute("""DROP TABLE IF EXISTS test;""")
-engine.execute("""CREATE TABLE IF NOT EXISTS test (
+engine.execute("""CREATE TABLE IF NOT EXISTS user_tmp (
   first_name text,
   surname text,
   contact_info text,
@@ -63,6 +64,7 @@ engine.execute("""CREATE TABLE IF NOT EXISTS test (
 # engine.execute("""INSERT INTO test(first_name, surname,contact_info,description,interests,user_group) VALUES ('grace hopper'), ('alan turing'), ('ada lovelace');""")
 
 
+#%% 
 
 @app.before_request
 def before_request():
@@ -116,62 +118,10 @@ def index():
 
   See its API: http://flask.pocoo.org/docs/0.10/api/#incoming-request-data
   """
-
-  # DEBUG: this is debugging code to see what request looks like
   print(request.args)
 
+  return render_template("index.html")
 
-  #
-  # example of a database query
-  #
-  # cursor = g.conn.execute("SELECT name FROM test")
-  # names = []
-  # for result in cursor:
-  #   names.append(result['name'])  # can also be accessed using result[0]
-  # cursor.close()
-
-  #
-  # Flask uses Jinja templates, which is an extension to HTML where you can
-  # pass data to a template and dynamically generate HTML based on the data
-  # (you can think of it as simple PHP)
-  # documentation: https://realpython.com/blog/python/primer-on-jinja-templating/
-  #
-  # You can see an example template in templates/index.html
-  #
-  # context are the variables that are passed to the template.
-  # for example, "data" key in the context variable defined below will be 
-  # accessible as a variable in index.html:
-  #
-  #     # will print: [u'grace hopper', u'alan turing', u'ada lovelace']
-  #     <div>{{data}}</div>
-  #     
-  #     # creates a <div> tag for each element in data
-  #     # will print: 
-  #     #
-  #     #   <div>grace hopper</div>
-  #     #   <div>alan turing</div>
-  #     #   <div>ada lovelace</div>
-  #     #
-  #     {% for n in data %}
-  #     <div>{{n}}</div>
-  #     {% endfor %}
-  #
-  # context = dict(data = names)
-
-
-  #
-  # render_template looks in the templates/ folder for files.
-  # for example, the below file reads template/index.html
-  #
-  return render_template("index.html")#, **context)
-
-#
-# This is an example of a different path.  You can see it at
-# 
-#     localhost:8111/another
-#
-# notice that the functio name is another() rather than index()
-# the functions for each app.route needs to have different names
 
 @app.route('/signup.html')
 def signup():
@@ -179,7 +129,26 @@ def signup():
 
 @app.route('/feed.html')
 def feed():
-  return render_template("feed.html")
+  cursor = g.conn.execute("SELECT first_name, last_name, contact_info FROM users")
+  first_name_lst = []
+  last_name_lst = []
+  contact = []
+  for obj in cursor:
+    first_name_lst.append(obj[0])
+    last_name_lst.append(obj[1])
+    contact.append(obj[2])
+  cursor.close()
+  
+  first_name_lst = [re.sub('_', ' ', obj) for obj in first_name_lst]
+  names = []
+  for first, last in zip(first_name_lst, last_name_lst):
+    names.append(first + " " + last)
+  
+  data = []
+  for name, email in zip(names, contact):
+    data.append({'name': name, 'email': email, 'img': "https://randomuser.me/api/portraits/men/" + str(names.index(name))+ ".jpg"})
+
+  return render_template("feed.html", data  = data)
 
 
 # Example of adding new data to the database
@@ -189,12 +158,19 @@ def add():
   lname = request.form['lastname-user']
   contact_info = request.form['contact-user']
   desc = request.form['bio-user']
-  interests = request.form['userinterests']
+  interests = request.form.getlist('userinterests')
+  print("______________")
+  print(interests)
+  print("______________")
   user_group = request.form['user_group']
   print(fname, lname, contact_info, desc, interests, user_group)
-  cmd = 'INSERT INTO test(first_name, surname, contact_info, description, interests, user_group) VALUES ((:fname), (:lname), (:contact_info), (:desc), (:interests), (:user_group))';
+  cmd = 'INSERT INTO user_tmp(first_name, surname, contact_info, description, interests, user_group) VALUES ((:fname), (:lname), (:contact_info), (:desc), (:interests), (:user_group))';
   g.conn.execute(text(cmd), fname = fname, lname = lname, contact_info = contact_info, desc = desc, interests = interests, user_group = user_group);
-  return redirect('/') ## Input next page link
+
+  if user_group == 'Student':
+    return redirect('/student_signup.thml') ## Input next page link
+  elif user_group == 'Employee':
+    return redirect('/employee_signup.thml')
 
 
 @app.route('/login')

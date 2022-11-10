@@ -5,7 +5,7 @@
 
            
 
-            <form method="POST" width = auto margin = auto action ="/add" >
+            <form method="POST" width = auto margin = auto action ="/add">
             <div class="container" width = auto>
                 <label for="fname">First name:</label><br>
                 <!-- <label for="uname"><b>Username</b></label> -->
@@ -45,22 +45,7 @@
             <input type="radio" id="employee" name="user_group" value="Employee">
             <label for="employee">Employee</label><br>
             <br>
-            <input type="submit" value="Add">
-            <button type="button" onclick="userGroupFunc()">
-                Next
-                </button>
-            <script type="text/javascript">
-                function userGroupFunc() { 
-                    if(document.getElementById('student').checked) {
-                       return location.href='https://google.com';
-                    }
-                    else if(document.getElementById('employee').checked) {
-                       return location.href='https://fb.com';
-                    }
-                }
-                </script>
-
-
+            <input type="submit" value="Add" >
             </form>
         </div>
     </body>

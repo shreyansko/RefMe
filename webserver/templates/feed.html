@@ -1,11 +1,11 @@
 <html>
-    
+
     <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/feed.css') }}">
     <div class="topnav">
         <a class="active" href="#feed">Feed</a>
         <a href="profile.html">Profile</a>
         <input type="text" placeholder="Search keywords...">
-        <button type="button" onclick="logoutfunc()">Log Out</button>
+        <button id = "logOut" type="button" class="float-left submit-button">Log Out</button>
       </div>
 
     <div class="filter">
@@ -15,63 +15,20 @@
         <label for="filter2">filter2</label>
     </div>
     <div class="page">
-
+        {% for item in data %}
         <div class="row">
-            <img src="https://randomuser.me/api/portraits/men/68.jpg" alt="">
-            <h3>Name Surname</h3><br>
-            <p>Bio of user</p>
+            <img src={{item.img}} alt="">
+            <h3>{{item.name}}</h3><br>
+            <p>Email: {{item.email}}</p>
         </div>
-
-        <div class="row">
-            <img src="https://randomuser.me/api/portraits/women/65.jpg" alt="">
-            <h3>Name Surname</h3><br>
-            <p>Bio of user</p>
-        </div>
-
-        <div class="row">
-            <img src="https://randomuser.me/api/portraits/men/69.jpg" alt="">
-            <h3>Name Surname</h3><br>
-            <p>Bio of user</p>
-        </div>
-        <div class="row">
-            <img src="https://randomuser.me/api/portraits/men/23.jpg" alt="">
-            <h3>Name Surname</h3><br>
-            <p>SBio of user</p>
-        </div>
-
-        <div class="row">
-            <img src="https://randomuser.me/api/portraits/women/88.jpg" alt="">
-            <h3>Name Surname</h3><br>
-            <p>Bio of user</p>
-        </div>
-
-        <div class="row">
-            <img src="https://randomuser.me/api/portraits/women/72.jpg" alt="">
-            <h3>Name Surname</h3><br>
-            <p>Bio of user</p>
-        </div>
-
-        <div class="row">
-            <img src="https://randomuser.me/api/portraits/men/39.jpg" alt="">
-            <h3>Name Surname</h3><br>
-            <p>Bio of user</p>
-        </div>
-
-        <div class="row">
-            <img src="https://randomuser.me/api/portraits/men/28.jpg" alt="">
-            <h3>Name Surname</h3><br>
-            <p>Bio of user</p>
-        </div>
-
-        <div class="row">
-            <img src="https://randomuser.me/api/portraits/women/90.jpg" alt="">
-            <h3>Name Surname</h3><br>
-            <p>Bio of user</p>
-        </div>
+        {% endfor %}
 
      </div>
 
 
   </html>
-  
-  <!--  -->
+  <script type="text/javascript">
+    document.getElementById("logOut").onclick = function () {
+        location.href = "/";
+    };
+</script>
