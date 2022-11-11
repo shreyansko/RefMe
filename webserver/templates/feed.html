@@ -8,26 +8,33 @@
         <button id = "logOut" type="button" class="float-left submit-button">Log Out</button>
       </div>
 
-    <div class="filter">
-        <input type="radio" id="filter1" name="filter_group" value=filter_aatr1>
-        <label for="filter1">filter1</label>
-        <input type="radio" id="filter2" name="filter_group" value="filter_aatr2">
-        <label for="filter2">filter2</label>
+    <div class="filter" width = "20%">
+        <label for="filter">Filter feed:</label><br>
+        <!-- <label for="uname"><b>Username</b></label> -->
+        <select id ="company" type="text" placeholder="Company" name="company-user">
+            {% for school in schools %}
+            <option value={{school.id}}>{{school.name}}</option>
+            {%endfor%}
+        </select>
+
     </div>
     <div class="user_blob" >
         {% for item in data %}
         <div class="row">
-            <div class = "user_img">
-                <img src={{item.img}} alt="user image" height = "80%"> 
+            
+            <div>
+                <img src={{item.img}} alt="user image" height = "80%" > 
             </div>
-            <div class = "user_info">
+            <div>
                 <p><h3>{{item.name}}</h3></p>
                 <p>{{item.co_key}}: {{item.company}} </p>
                 <p> {{item.pos_key}}: {{item.position}} </p>
             </div>
+            <a href={{item.name}}>
+                <span class="link"></span></a>
         </div>
         {% endfor %}
-
+        
      </div>
 
 
@@ -37,11 +44,14 @@
         location.href = "/";
     };
 
+
+    console.log('{{session.user_group}}');
+    console.log('{{session.userid}}');
     function profileFunction(){
         if ('{{session.user_group}}' === 'Employee') {
-            window.location.href = "employee_profile.html"
+            window.location.href = "/employee_profile.html"
         } else if  ('{{session.user_group}}' === 'Student') {
-            window.location.href = "student_profile.html"
+            window.location.href = "/student_profile.html"
         };
         
     };

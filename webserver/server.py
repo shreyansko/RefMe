@@ -575,9 +575,10 @@ def save_profile():
 
 @app.route("/student_profile", methods=['GET','POST'])
 def student_profile():
-
+    print("__________________")
+    print('student_profile')
+    print("__________________")
     user_id = session['userid']
-    print(user_id)
     # request.args['user_id']
 
     form = PositionForm()
@@ -621,7 +622,7 @@ def student_profile():
     cursor = g.conn.execute(q_refer_information)
     job_info = cursor.fetchall()
 
-    return render_template("student_profile.html", profile_info=profile_info, job_info=job_info, form=form, user_id=user_id)
+    return render_template(url_for("student_profile"), profile_info=profile_info, job_info=job_info, form=form, user_id=user_id)
 
 
 @app.route("/employee_profile", methods=['GET','POST'])
@@ -675,7 +676,7 @@ def employee_profile():
     job_info = cursor.fetchall()
 
 
-    return render_template("employee_profile.html", profile_info = profile_info, job_info = job_info, form=form, user_id=user_id)
+    return render_template(url_for("employee_profile"), profile_info = profile_info, job_info = job_info, form=form, user_id=user_id)
 
 if __name__ == "__main__":
   import click
