@@ -143,7 +143,6 @@
   float: right;
   padding-left: 10%;
   width: 80%;
-  text-overflow: " [..]";
   white-space: pre-line;
   overflow-wrap: break-word;
 }

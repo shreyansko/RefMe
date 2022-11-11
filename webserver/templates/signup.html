@@ -18,7 +18,7 @@
                 <label for="pswd">Password:</label><br>
                 <!-- <label for="uname"><b>Username</b></label> -->
                 <input id ="pswd" type="password" placeholder="Password" name="password-user" required value><br><br>
-                <label for="verifypswd">Verify password:</label><br>
+                <label for="verifypswd">Confirm password:</label><br>
                 <!-- <label for="uname"><b>Username</b></label> -->
                 <input id ="verifypswd" type="password" placeholder="Password" name="verify-password-user" required value>
             </div><br>
@@ -37,10 +37,23 @@
                 <!-- <label for="uname"><b>Username</b></label> -->
                 <input id ="usercontact" type="text" placeholder="Contact" name="contact-user" required value>
             </div><br>
+
+
+
             <div class="container" width = auto>
                 <label for="userbio">Description:</label><br>
                 <!-- <label for="uname"><b>Username</b></label> -->
                 <textarea id ="userbio" placeholder="Description" name = "bio-user" rows = "10" cols = "30" style="font-style: auto;"> </textarea>
+            </div><br>
+
+            <div class="container" width = auto>
+                <label for="school">Columbia University School:</label><br>
+                <!-- <label for="uname"><b>Username</b></label> -->
+                <select id ="school" type="text" placeholder="Select School" name="school-user" required value>
+                    {% for school in schools %}
+                    <option value={{school.id}}>{{school.name}}</option>
+                    {%endfor%}
+                </select>
             </div><br>
 
             <label for="interests">Interests/Keywords:</label><br>

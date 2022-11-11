@@ -59,7 +59,7 @@ engine = create_engine(DATABASEURI)
 
 
 # Here we create a test table and insert some values in it
-engine.execute("""DROP TABLE IF EXISTS test;""")
+# engine.execute("""DROP TABLE IF EXISTS user_tmp;""")
 engine.execute("""CREATE TABLE IF NOT EXISTS user_tmp (
     user_id varchar PRIMARY KEY,
     password varchar,
@@ -67,6 +67,7 @@ engine.execute("""CREATE TABLE IF NOT EXISTS user_tmp (
     last_name text,
     contact_info text,
     description text,
+    school_id text,
     interests text,
     user_group text,
     skills varchar,
@@ -146,7 +147,6 @@ def login_user():
   cnt = cnt.fetchall()
   cnt = cnt[0][0]
   session['userid'] = username
-  print(cnt)
   if cnt == 0:
     data = ["Invalid username or password!"]
     return render_template('index.html', data = data) ## Input next page link
@@ -157,10 +157,18 @@ def login_user():
 
 @app.route('/signup.html')
 def signup():
-  return render_template("signup.html")
+  school_q = 'SELECT school_id, school_name FROM school';
+  school =  g.conn.execute(text(school_q));
+  schools = []
+  for obj in school:
+      print(obj[0])
+      print(obj[1])
+      schools.append({'id':obj[0], 'name':obj[1]})
+  return render_template("signup.html", schools = schools)
 
 @app.route('/feed.html')
 def feed():
+  # Schools for autofilling drop down on signup
   q = 'SELECT student_id, employee_id FROM users WHERE user_id = (:userid)';
   user_group = g.conn.execute(text(q), userid = session['userid']); #session['userid']
   user_group = user_group.fetchall()
@@ -193,7 +201,6 @@ def feed():
       data.append({'name': name, 'bio': bio, 
                    'img': "https://xsgames.co/randomusers/assets/avatars/pixel/" + str(names.index(name))+ ".jpg",
                    'position': pos, 'company':co, 'pos_key': pos_key, 'co_key': co_key})
-  
   
   # If user is an employee
   elif user_group[0][0] == None:
@@ -240,6 +247,7 @@ def add():
   lname = request.form['lastname-user']
   contact_info = request.form['contact-user']
   desc = request.form['bio-user']
+  school = request.form['school-user']
   interests = request.form.getlist('userinterests')
   if password != verify_pass:
     data = ["Passwords do not match! Try again..."]
@@ -247,8 +255,8 @@ def add():
   else:
     user_group = request.form['user_group']
     # print(fname, lname, contact_info, desc, interests, user_group)
-    cmd = 'INSERT INTO user_tmp(user_id, password, first_name, last_name, contact_info, description, interests, user_group, skills, position, company_id) VALUES ((:username), (:password), (:fname), (:lname), (:contact_info), (:desc), (:interests), (:user_group), (:skills), (:position), (:company))';
-    g.conn.execute(text(cmd), username = username, password = password, fname = fname, lname = lname, contact_info = contact_info, desc = desc, interests = interests, user_group = user_group, skills = None, position = None, company = None);
+    cmd = 'INSERT INTO user_tmp(user_id, password, first_name, last_name, contact_info, description, school_id, interests, user_group, skills, position, company_id) VALUES ((:username), (:password), (:fname), (:lname), (:contact_info), (:desc), (:school), (:interests), (:user_group), (:skills), (:position), (:company))';
+    g.conn.execute(text(cmd), username = username, password = password, fname = fname, lname = lname, contact_info = contact_info, desc = desc, school = school, interests = interests, user_group = user_group, skills = None, position = None, company = None);
     
     session['userid'] = username
     print("Session userid:", session['userid'])
@@ -568,7 +576,9 @@ def save_profile():
 @app.route("/student_profile", methods=['GET','POST'])
 def student_profile():
 
-    user_id = request.args['user_id']
+    user_id = session['userid']
+    print(user_id)
+    # request.args['user_id']
 
     form = PositionForm()
     form = populate_form(form)
@@ -617,7 +627,9 @@ def student_profile():
 @app.route("/employee_profile", methods=['GET','POST'])
 def employee_profile():
 
-    user_id = request.args['user_id']
+    user_id = session['userid']
+    print(user_id)
+    # user_id = request.args['user_id']
 
     form = PositionForm()
     form = populate_form(form)
