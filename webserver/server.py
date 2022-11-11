@@ -61,12 +61,19 @@ engine = create_engine(DATABASEURI)
 # Here we create a test table and insert some values in it
 engine.execute("""DROP TABLE IF EXISTS test;""")
 engine.execute("""CREATE TABLE IF NOT EXISTS user_tmp (
-  first_name text,
-  surname text,
-  contact_info text,
-  description text,
-  interests text,
-  user_group text
+    user_id varchar PRIMARY KEY,
+    password varchar,
+    first_name text,
+    last_name text,
+    contact_info text,
+    description text,
+    interests text,
+    user_group text,
+    skills varchar,
+    position varchar,
+    company_id int,
+    FOREIGN KEY (company_id) REFERENCES Company(company_id),
+    completed bool default false
 );""")
 # engine.execute("""INSERT INTO test(first_name, surname,contact_info,description,interests,user_group) VALUES ('grace hopper'), ('alan turing'), ('ada lovelace');""")
 
@@ -293,7 +300,7 @@ def populate_form(form):
 
 @app.route("/student_signup", methods=['GET','POST'])
 def student_signup():
-    user_id = session['userid']
+    userid = session['userid']
     
     form = PositionForm()
     form = populate_form(form)
@@ -303,42 +310,42 @@ def student_signup():
         company = form.company_name.data
         tool = form.tool.data
 
-        q_insert_skill = f"""
-        INSERT INTO StudentInterestTemp(user_id, position_title, company_id) VALUES (
-            '{user_id}',
-            '{pos}',
-            {company}
-        )
-        """
+        if company != None and pos != None:
+            q_insert_skill = f"""
+            INSERT INTO StudentInterestTemp(user_id, position_title, company_id) VALUES (
+                '{userid}',
+                '{pos}',
+                {company}
+            )
+            """
 
-        q_insert_interest = f"""
-        INSERT INTO StudentTemp(user_id, skills) VALUES(
-            '{user_id}',
-            '{tool}'
-        )
-        """
+            try:
+                g.conn.execute(q_insert_skill)
+            except:
+                pass
+            
+        if tool != None:
+            q_insert_interest = f"""
+            UPDATE user_tmp
+            SET skills = '{tool}'
+            WHERE user_id='{userid}'
+            """
 
-        try:
-            g.conn.execute(q_insert_skill)
-        except:
-            pass
-        
-        try:
-            g.conn.execute(q_insert_interest)
-        except:
-            pass
+            try:
+                g.conn.execute(q_insert_interest)
+            except:
+                pass
 
         q_fetch_interest = f"""
         SELECT a.position_title, b.company_name
         FROM StudentInterestTemp a
         INNER JOIN Company b on a.company_id = b.company_id 
 
-        where user_id = '{user_id}'
+        where user_id = '{userid}'
         ;
         """
         cursor = g.conn.execute(q_fetch_interest)
         recorded_interests= cursor.fetchall()
-
 
         return render_template("student_signup.html", form = form, recorded_interests=recorded_interests)
 
@@ -368,7 +375,7 @@ def position_title(company_id):
 @app.route("/employee_signup", methods=['GET','POST'])
 def employee_signup():
 
-    user_id = session['userid']
+    userid = session['userid']
 
     # fetch a list of available companies
     cursor = g.conn.execute('SELECT company_name, company_id FROM company;') 
@@ -379,21 +386,21 @@ def employee_signup():
         company_id = request.form.get('company_list')
 
         q_insert_employee = f"""
-        INSERT INTO EmployeeTemp(user_id, position, company_id) VALUES (
-            '{user_id}',
-            '{pos}',
-            {company_id}
-        )
-        """        
+        UPDATE user_tmp
+        SET position='{pos}',
+            company_id={company_id},
+            completed=true
+        WHERE user_id='{userid}'
+        """
+
         try:
             g.conn.execute(q_insert_employee)
         except:
             pass
 
-        return redirect(url_for('index'))
+        return redirect(url_for('complete_signup'))
 
     return render_template("employee_signup.html",company_list=company_list)
-
 
 
 @app.route("/save_interest", methods=['POST'])
@@ -405,11 +412,11 @@ def save_interest():
 
     q_insert_skill = f"""
         INSERT INTO Student_Interest(student_id, position_title, company_id)
-            Select student_id,
+            select student_id,
             '{pos}',
             {company}
             from users u
-            where user_id='{user_id}' 
+            where user_id='{user_id}'
     """
 
     try:
@@ -418,6 +425,115 @@ def save_interest():
         pass
 
     return redirect(request.referrer)
+
+
+@app.route("/complete_signup", methods=['GET','POST'])
+def complete_signup():
+
+    userid = session['userid']
+
+    q_user_info = f"""
+      UPDATE user_tmp
+      SET completed=true
+      where user_id = '{userid}'
+    """
+    try:
+        g.conn.execute(q_user_info)
+    except:
+        print("The value did not set to true")
+
+    # write everything in the user_temp to perm user table
+    q_user_info = f"""
+      INSERT INTO USERS
+      SELECT
+        user_id
+        , first_name
+        , last_name
+        , contact_info
+        , case when user_group='Student' then (select max(student_id)+1 from student) else null end
+        , case when user_group='Employee' then (select max(employee_id)+1 from employee) else null end
+        , 1 as school_id
+        , description
+        , interests
+        , password
+      FROM user_tmp a
+      WHERE user_id = '{userid}' and completed=true
+      ;
+    """
+
+    try:
+        g.conn.execute(q_user_info)
+    except:
+        print("Registration not successful!")
+
+    q_group = f"""
+        SELECT
+            user_group
+        FROM user_tmp
+        WHERE user_id='{userid}' and completed=true
+    """
+
+    user_group = dict((g.conn.execute(q_group).fetchall())[0])['user_group']
+
+    if user_group=='Student':
+        # first insert the record into student table
+        q_student = f"""
+            INSERT INTO student
+            SELECT 
+                a.student_id
+                , b.skills
+                , a.user_id
+            FROM USERS a
+            INNER JOIN user_tmp b on a.user_id=b.user_id and b.completed=true
+            WHERE a.user_id='{userid}'
+            ;
+        """
+        try:
+            g.conn.execute(q_student)
+        except:
+            print("Insert into student not successful!")
+
+        # record student interest in the student_interest table
+        q_student_interst = f"""
+            INSERT INTO student_interest
+            SELECT
+                s.student_id
+                , a.position_title
+                , a.company_id
+            FROM studentinteresttemp a
+            INNER join student s on s.user_id=a.user_id
+            WHERE a.user_id='{userid}'
+            ;
+        """
+        try:
+            g.conn.execute(q_student_interst)
+        except:
+            print("Insert into student interest not successful!")
+
+
+    elif user_group=='Employee':
+        # insert the value into the employee table
+
+        # first insert the record into student table
+        q_employee = f"""
+            INSERT INTO employee
+            SELECT 
+                a.employee_id
+                , b.position
+                , a.user_id
+                , b.company_id
+            FROM USERS a
+            INNER JOIN user_tmp b on a.user_id=b.user_id and b.completed=true
+            WHERE a.user_id='{userid}'
+            ;
+        """
+        try:
+            g.conn.execute(q_employee)
+        except:
+            print("Insert into student not successful!")
+
+    return redirect(url_for('index'))
+
 
 
 @app.route("/save_profile", methods=['POST'])
