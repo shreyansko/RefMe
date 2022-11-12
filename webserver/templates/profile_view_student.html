@@ -7,6 +7,10 @@ table, th, td {
 </style>
 
 <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/message.css') }}">
+<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/profile.css') }}">
+<link rel='stylesheet' href="https://fonts.googleapis.com/css?family=Lexend Deca">
+
+<div id = "student_profile_view"> 
 
 {% block content %}
 <div class="container">
@@ -17,9 +21,6 @@ table, th, td {
     {% block page_content %}{% endblock %}
 </div>
 {% endblock %}
-
-
-<div id = "student_profile_view">
   
     User Id: {{data.user_id}}
     <br></br>
@@ -65,9 +66,8 @@ table, th, td {
     </table>
     <br></br>
 
+    <button><a style="text-decoration: none;" href="/feed.html">Exit</a></button>
+
 </div>
-
-
-<button><a style="text-decoration: none;" href="/feed.html">Exit</a></button>
 
 </html>

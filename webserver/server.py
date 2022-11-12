@@ -3,14 +3,9 @@
 """
 Columbia W4111 Intro to databases
 Example webserver
-
 To run locally
-
     python server.py
-
 Go to http://localhost:8111 in your browser
-
-
 A debugger such as "pdb" may be helpful for debugging.
 Read about it online.
 """
@@ -87,7 +82,6 @@ def before_request():
   This function is run at the beginning of every web request 
   (every time you enter an address in the web browser).
   We use it to setup a database connection that can be used throughout the request
-
   The variable g is globally accessible
   """
   try:
@@ -127,11 +121,9 @@ def index():
   session.clear()
   """
   request is a special object that Flask provides to access web request information:
-
   request.method:   "GET" or "POST"
   request.form:     if the browser submitted a form, this contains the data in the form
   request.args:     dictionary of URL arguments e.g., {a:1, b:2} for http://localhost?a=1&b=2
-
   See its API: http://flask.pocoo.org/docs/0.10/api/#incoming-request-data
   """
   print(request.args)
@@ -449,7 +441,6 @@ def student_signup():
         SELECT a.position_title, b.company_name
         FROM StudentInterestTemp a
         INNER JOIN Company b on a.company_id = b.company_id 
-
         where user_id = '{userid}'
         ;
         """
@@ -924,7 +915,6 @@ def employee_profile():
         inner join employee e on r.employee_id = e.employee_id
         inner join users u_emp on u_emp.user_id = e.user_id
         inner join company c on r.company_id = c.company_id
-
         left join student s on s.student_id = r.student_id
         left join users u on u.user_id = s.user_id
         where u_emp.user_id='{user_id}'
@@ -964,13 +954,9 @@ if __name__ == "__main__":
     """
     This function handles command line parameters.
     Run the server using
-
         python server.py
-
     Show the help text using
-
         python server.py --help
-
     """
 
     HOST, PORT = host, port
