@@ -91,12 +91,14 @@ table, th, td {
         <th>Company</th>
         <th>Interested positions</th>
         <th>Received referral?</th>
+        <th>Referrer contact information</th>
       <tr>
     <tr>
     {% for j in job_info %}
       <td>{{ j.company_name }}</td>
       <td>{{ j.position_title }}</td>
       <td>{{ j.received_referral }}</td>
+      <td>{{ j.employee_contact_info }}</td>
     </tr>
     {% endfor %}
 

@@ -721,6 +721,32 @@ def view_profile(user_id):
         print(data)
         return render_template("profile_view_employee.html", data = data)
 
+@app.route('/like', methods=['POST'])
+def send_like():
+
+    userid = session['userid']
+    employee_liked_userid = request.form.get('employee_liked')
+
+    q_like=f"""
+        INSERT INTO student_like
+        select 
+            u.student_id
+            , (select employee_id from users where user_id='{employee_liked_userid}')
+        from users u
+        where u.user_id='{userid}'
+    """
+
+    try:
+        g.conn.execute(q_like)
+        flash('Like successfully sent!', 'info')
+
+    except:
+        print("Did not save the like information successfully!")
+        flash('You already sent the like!', 'error')
+
+
+    return redirect(request.referrer)
+
 
 @app.route('/refer', methods=['POST'])
 def refer():
@@ -732,10 +758,11 @@ def refer():
 
     #check if the employee works at the same company as the interested company
     q_check = f"""select company_id from employee where user_id='{referrer_user_id}'"""
-    referrer_company = g.conn.execute(q_check).fetchall()[0]
+    referrer_company = g.conn.execute(q_check).fetchall()[0][0]
 
-    if referrer_company != company_interested:
-        return "You can only refer students for positions in your company."
+    if int(referrer_company) != int(company_interested):
+        flash(f"You can only refer students for positions in your company", "error")
+        return redirect(request.referrer) 
 
     q_refer = f"""
         INSERT INTO refer
@@ -763,12 +790,10 @@ def refer():
 
         g.conn.execute(q_reset_refer_require)
 
-        return "successfully inserted record"
+        flash("Your contact information has been sent to the student!", "info")
     except:
+        flash("System error: message not sent to the student.", "error")
 
-        return f"failed to insert record, query: {q_refer}"
-
-    # return f"refer done! from {referrer_user_id} to {referee_user_id} for {position_interested} in {company_interested}"
     return redirect(request.referrer)
 
 
@@ -839,14 +864,18 @@ def student_profile():
 
     q_refer_information = f"""
             select 
-                c.position_title
+                i.position_title
                 , co.company_name
-                , case when c.require_referral=true then false else true end as received_referral
-            from users a 
-            inner join student b on a.user_id = b.user_id
-            inner join student_interest c on b.student_id = c.student_id
-            inner join company co on co.company_id = c.company_id
-            where a.user_id='{user_id}'
+                , case when i.require_referral=true then false else true end as received_referral
+                , u.contact_info as employee_contact_info
+            from student s
+            inner join student_interest i on s.student_id = i.student_id
+            inner join company co on co.company_id = i.company_id
+            left join refer r on r.position_title=i.position_title and
+                r.company_id=i.company_id and
+                r.student_id=i.student_id
+            left join users u on u.employee_id=r.employee_id
+            where s.user_id='{user_id}'
     """
 
     cursor = g.conn.execute(q_refer_information)
@@ -859,8 +888,6 @@ def student_profile():
 def employee_profile():
 
     user_id = session['userid']
-    print(user_id)
-    # user_id = request.args['user_id']
 
     form = PositionForm()
     form = populate_form(form)
@@ -889,7 +916,7 @@ def employee_profile():
     cursor = g.conn.execute(q_basic_info)
     profile_info = cursor.fetchall()
 
-    q_refer_information = f"""
+    q_refer_info = f"""
             SELECT s.user_id as referred_user
             , r.position_title
             , c.company_name
@@ -902,11 +929,28 @@ def employee_profile():
         left join users u on u.user_id = s.user_id
         where u_emp.user_id='{user_id}'
         """
-    cursor = g.conn.execute(q_refer_information)
+    cursor = g.conn.execute(q_refer_info)
     job_info = cursor.fetchall()
 
 
-    return render_template("employee_profile.html", profile_info = profile_info, job_info = job_info, form=form, user_id=user_id)
+    q_like_info = f"""
+        SELECT
+            u2.first_name
+            , u2.last_name
+            , u2.user_id
+            , u2.contact_info
+            , us.skills
+        FROM users u
+        INNER JOIN student_like s on u.employee_id = s.employee_id
+        INNER JOIN student us on us.student_id = s.student_id
+        INNER JOIN users u2 on us.student_id = u2.student_id
+        WHERE u.user_id='{user_id}'
+        """
+    cursor = g.conn.execute(q_like_info)
+    like_info = cursor.fetchall()
+
+    return render_template("employee_profile.html", profile_info = profile_info, job_info = job_info,
+                            form=form, like_info=like_info, user_id=user_id)
 
 if __name__ == "__main__":
   import click

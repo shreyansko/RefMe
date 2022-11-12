@@ -7,10 +7,6 @@ table, th, td {
 </style>
 
 
-<h1>
-    THIS IS A USER PROFILE PAGE
-</h1>
-
 <button><a style="text-decoration: none;" href="/">Exit</a></button>
 <form action="/save_profile" method="post">
 
@@ -54,7 +50,7 @@ table, th, td {
 <br></br>
 
 
-<p id="job_info" name="job_info">
+<div id="job_info" name="job_info">
     <h3>List of referrals</h3>
     <table>
       <tr>
@@ -72,8 +68,33 @@ table, th, td {
 
     </table>
 
-</p>
+</div>
+
+
+<div id="like_info" name="like_info">
+    <h3>List of student likes</h3>
+    <table>
+      <tr>
+        <th>User Id</th>
+        <th>First Name</th>
+        <th>Last Name</th>
+        <th>Skills</th>
+        <th>Contact Information</th>
+        <th>Profile link</th>
+      <tr>
+    <tr>
+    {% for j in like_info %}
+      <td>{{ j.user_id }}</td>
+      <td>{{ j.first_name }}</td>
+      <td>{{ j.last_name }}</td>
+      <td>{{ j.skills }}</td>
+      <td>{{ j.contact_info }}</td>
+      <td> <a style="text-decoration: none;" href="/profile/{{j.user_id}}"> Link </a>  <td>
+    </tr>
+    {% endfor %}
+
+    </table>
+</div>
 
 
 </html>
-
