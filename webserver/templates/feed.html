@@ -49,9 +49,9 @@
     console.log('{{session.userid}}');
     function profileFunction(){
         if ('{{session.user_group}}' === 'Employee') {
-            window.location.href = "/employee_profile.html"
+            window.location.href = "employee_profile"
         } else if  ('{{session.user_group}}' === 'Student') {
-            window.location.href = "/student_profile.html"
+            window.location.href = "student_profile"
         };
         
     };
