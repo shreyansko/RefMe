@@ -6,14 +6,30 @@ table, th, td {
 }
 </style>
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/message.css') }}">
+
+<body>
+
+{% block content %}
+<div class="container">
+    {% for category, message in get_flashed_messages(with_categories=True) %}
+
+    <div class="alert alert-{{category}}"> {{ message }}</div>    
+    {% endfor %}
+    {% block page_content %}{% endblock %}
+</div>
+{% endblock %}
 
 <form action="/like" method='POST'>
 
-    <button> Like </button>
+    <button style="font-size:18px"> Send Like <i class="fa fa-handshake-o"></i></button>
+
     <input type="hidden" name="employee_liked" id="employee_liked" value="{{ data.user_id }}">
 
 </form>
 
+<i class='fas fa-handshake'></i>
 
 <h1>
     THIS IS A USER PROFILE PAGE for employee info
@@ -48,6 +64,11 @@ table, th, td {
     <br></br>
 
 </div>
+
+<button><a style="text-decoration: none;" href="/feed.html">Exit</a></button>
+</body>
+
+
 
 
 </html>
