@@ -8,6 +8,7 @@ table, th, td {
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/message.css') }}">
+<!-- <link rel="stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/profile.css') }}"> -->
 
 <body>
 
@@ -21,6 +22,7 @@ table, th, td {
 </div>
 {% endblock %}
 
+
 <form action="/like" method='POST'>
 
     <button style="font-size:18px"> Send Like <i class="fa fa-handshake-o"></i></button>
@@ -31,11 +33,7 @@ table, th, td {
 
 <i class='fas fa-handshake'></i>
 
-<h1>
-    THIS IS A USER PROFILE PAGE for employee info
-</h1>
-
-<div id = "employee_profile_view">
+<div id = "employee_profile_view" class="card">
   
     User Id: {{data.user_id}}
     <br></br>
@@ -63,9 +61,10 @@ table, th, td {
     
     <br></br>
 
+    <button><a style="text-decoration: none;" href="/feed.html">Exit</a></button>
+
 </div>
 
-<button><a style="text-decoration: none;" href="/feed.html">Exit</a></button>
 </body>
 
 
