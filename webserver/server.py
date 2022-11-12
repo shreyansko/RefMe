@@ -616,6 +616,32 @@ def view_profile(user_id):
 
         return render_template("profile_view_employee.html", data = data)
 
+@app.route('/like', methods=['POST'])
+def send_like():
+
+    userid = session['userid']
+    employee_liked_userid = request.form.get('employee_liked')
+
+
+    return user_id, employee_liked_userid
+
+    q_like=f"""
+        INSERT INTO student_like
+        select 
+            u.student_id
+            , (select employee_id from users where user_id='{employee_liked_userid}')
+        from users u
+        where u.user_id='{userid}'
+    """
+
+    try:
+        g.conn.execute(q_like)
+    except:
+        print("Did not save the like information successfully!")
+
+
+    return redirect(request.referrer)
+
 
 @app.route('/refer', methods=['POST'])
 def refer():
@@ -734,14 +760,18 @@ def student_profile():
 
     q_refer_information = f"""
             select 
-                c.position_title
+                i.position_title
                 , co.company_name
-                , case when c.require_referral=true then false else true end as received_referral
-            from users a 
-            inner join student b on a.user_id = b.user_id
-            inner join student_interest c on b.student_id = c.student_id
-            inner join company co on co.company_id = c.company_id
-            where a.user_id='{user_id}'
+                , case when i.require_referral=true then false else true end as received_referral
+                , u.contact_info as employee_contact_info
+            from student s
+            inner join student_interest i on s.student_id = i.student_id
+            inner join company co on co.company_id = i.company_id
+            left join refer r on r.position_title=i.position_title and
+                r.company_id=i.company_id and
+                r.student_id=i.student_id
+            left join users u on u.employee_id=r.employee_id
+            where s.user_id='{user_id}'
     """
 
     cursor = g.conn.execute(q_refer_information)
