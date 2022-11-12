@@ -67,7 +67,7 @@ engine.execute("""CREATE TABLE IF NOT EXISTS user_tmp (
     last_name text,
     contact_info text,
     description text,
-    school_id text,
+    school_id int,
     interests text,
     user_group text,
     skills varchar,
@@ -233,7 +233,6 @@ def feed():
                    'position': pos, 'company':co, 'pos_key': pos_key, 'co_key': co_key})
   
   return render_template("feed.html", data  = data)
-    
 
 
 
@@ -460,7 +459,7 @@ def complete_signup():
         , contact_info
         , case when user_group='Student' then (select max(student_id)+1 from student) else null end
         , case when user_group='Employee' then (select max(employee_id)+1 from employee) else null end
-        , 1 as school_id
+        , school_id
         , description
         , interests
         , password
@@ -540,8 +539,132 @@ def complete_signup():
         except:
             print("Insert into student not successful!")
 
+
+    # check to drop records in the user_tmp if record exists in users table AND (student or employee) table
+    q_drop_check = f"""
+        delete from user_tmp
+        where user_id in (
+                select u.user_id
+                from users u
+                left join student s on u.user_id = s.user_id
+                left join employee e on u.user_id = e.user_id
+                where (s.user_id is not null or e.user_id is not null)
+                )
+            and user_id = '{userid}'
+        ;
+    """
+
+    g.conn.execute(q_drop_check)
+
     return redirect(url_for('index'))
 
+@app.route('/profile/<user_id>', methods=['GET'])
+def view_profile(user_id):
+
+    q_profile = f"""
+        select
+            a.user_id
+            , a.student_id
+            , a.employee_id        
+            , a.first_name
+            , a.last_name
+            , a.contact_info
+            , b.school_name
+            , s.skills
+            , c.company_name
+            , e.position
+            , a.description
+            , a.interests
+        from users a
+        inner join school b on a.school_id = b.school_id
+        left join student s on s.user_id = a.user_id
+        left join employee e on e.user_id = a.user_id
+        left join company c on c.company_id = e.company_id
+        where a.user_id='{user_id}'
+        ;
+    """
+
+    cursor = g.conn.execute(q_profile)
+    data = dict(cursor.fetchall()[0])
+
+    is_student = data['student_id']
+    user_group=""
+    if is_student:
+        data['user_group']="student"
+        
+        q_student_interest = f"""
+        select 
+            c.position_title
+            , co.company_name as interested_company
+            , co.company_id
+        from users a 
+        inner join student b on a.user_id = b.user_id
+        inner join student_interest c on b.student_id = c.student_id
+        inner join company co on co.company_id = c.company_id
+        where a.user_id='{user_id}' and c.require_referral = true
+        """
+
+        cursor = g.conn.execute(q_student_interest)
+        student_data = cursor.fetchall()
+
+        data['interested_position'] = [(i[0],i[1],i[2]) for i in student_data]
+
+        return render_template("profile_view_student.html", data = data)
+
+    else:
+        data['user_group']="employee"
+
+        return render_template("profile_view_employee.html", data = data)
+
+
+@app.route('/refer', methods=['POST'])
+def refer():
+
+    referee_user_id = request.form.get('refer_user_id')
+    company_interested = request.form.get('company_interested')
+    position_interested = request.form.get('position_interested')
+    referrer_user_id = session['userid']
+
+    #check if the employee works at the same company as the interested company
+    q_check = f"""select company_id from employee where user_id='{referrer_user_id}'"""
+    referrer_company = g.conn.execute(q_check).fetchall()[0]
+
+    if referrer_company != company_interested:
+        return "You can only refer students for positions in your company."
+
+    q_refer = f"""
+        INSERT INTO refer
+        SELECT
+            e.employee_id
+            , (select student_id from student where user_id = '{referee_user_id}')
+            , '{position_interested}'
+            , {company_interested}
+        FROM users u
+        INNER join employee e on u.user_id = e.user_id
+        WHERE u.user_id='{referrer_user_id}'
+        ;
+    """
+
+    try:
+        g.conn.execute(q_refer)
+
+        q_reset_refer_require = f"""
+            UPDATE student_interest
+            SET require_referral = false
+            WHERE student_id in (select student_id from student where user_id = '{referee_user_id}')
+                and position_title = '{position_interested}'
+                and company_id = {company_interested}
+        """
+
+        g.conn.execute(q_reset_refer_require)
+
+        return "successfully inserted record"
+    except:
+
+        return f"failed to insert record, query: {q_refer}"
+
+    # return f"refer done! from {referrer_user_id} to {referee_user_id} for {position_interested} in {company_interested}"
+    return redirect(request.referrer)
 
 
 @app.route("/save_profile", methods=['POST'])
@@ -612,6 +735,7 @@ def student_profile():
             select 
                 c.position_title
                 , co.company_name
+                , case when c.require_referral=true then false else true end as received_referral
             from users a 
             inner join student b on a.user_id = b.user_id
             inner join student_interest c on b.student_id = c.student_id

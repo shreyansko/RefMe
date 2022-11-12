@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<style>
+table, th, td {
+  border: 1px solid black;
+}
+</style>
+
+
+<h1>
+    THIS IS A USER PROFILE PAGE for student info
+</h1>
+
+<div id = "student_profile_view">
+  
+    User Id: {{data.user_id}}
+    <br></br>
+
+    First Name: {{data.first_name}}
+    <br></br>
+
+    Last Name: {{data.last_name}}
+    <br></br>
+
+    Contact Info: {{data.contact_info}}
+    <br></br>
+
+    School name: {{data.school_name}}
+    <br></br>
+
+    Interest: {{data.interests}}
+    <br></br>
+
+    Description:
+    <p>{{data.description}}</p>
+    
+    <br></br>
+
+    <table>
+      <tr>
+        <th>Company</th>
+        <th>Interested positions</th>
+      <tr>
+        <tr>
+        {% for j in data.interested_position %}
+        <form action='/refer' method='POST'>
+        <input type="hidden" name="refer_user_id" id="refer_user_id" value="{{ data.user_id }}">
+          <td>{{ j[1] }}</td>
+          <input type="hidden" name="company_interested" id="company_interested" value="{{ j[2] }}">
+          <td>{{ j[0] }}</td>
+          <input type="hidden" name="position_interested" id="position_interested" value="{{ j[0] }}">
+          <td><button> Refer </button></td>
+        </tr>
+        </form>
+        {% endfor %}
+
+    </table>
+    <br></br>
+
+</div>
+
+
+</html>
