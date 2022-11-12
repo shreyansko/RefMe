@@ -176,18 +176,20 @@ def feed():
   # If the user is a student
   if user_group[0][0] == 1:
     session['user_group'] = 'Student'
-    cursor = g.conn.execute("SELECT  u.first_name, u.last_name, u.description, e.position, c.company_name FROM employee e LEFT JOIN users u ON e.employee_id = u.employee_id LEFT JOIN company c ON e.company_id = c.company_id;")
+    cursor = g.conn.execute("SELECT  u.first_name, u.last_name, u.description, e.position, c.company_name, u.user_id FROM employee e LEFT JOIN users u ON e.employee_id = u.employee_id LEFT JOIN company c ON e.company_id = c.company_id;")
     first_name_lst = []
     last_name_lst = []
     desc = []
     position = []
     company = []
+    userid = []
     for obj in cursor:
       first_name_lst.append(obj[0])
       last_name_lst.append(obj[1])
       desc.append(obj[2])
       position.append(obj[3])
       company.append(obj[4])
+      userid.append(obj[5])
     cursor.close()
     
     first_name_lst = [re.sub('_', ' ', obj) for obj in first_name_lst]
@@ -197,26 +199,28 @@ def feed():
     pos_key = "Position"
     co_key = "Company"
     
-    for name, bio, pos, co in zip(names, desc, position, company):
+    for name, bio, pos, co, id in zip(names, desc, position, company, userid):
       data.append({'name': name, 'bio': bio, 
                    'img': "https://xsgames.co/randomusers/assets/avatars/pixel/" + str(names.index(name))+ ".jpg",
-                   'position': pos, 'company':co, 'pos_key': pos_key, 'co_key': co_key})
+                   'position': pos, 'company':co, 'pos_key': pos_key, 'co_key': co_key, 'id':id})
   
   # If user is an employee
   elif user_group[0][0] == None:
     session['user_group'] = 'Employee'
-    cursor = g.conn.execute("SELECT  u.first_name, u.last_name, u.description, s.skills, sl.school_name FROM student s LEFT JOIN users u ON s.student_id = u.student_id LEFT JOIN school sl ON u.school_id = sl.school_id;")
+    cursor = g.conn.execute("SELECT  u.first_name, u.last_name, u.description, s.skills, sl.school_name, u.user_id FROM student s LEFT JOIN users u ON s.student_id = u.student_id LEFT JOIN school sl ON u.school_id = sl.school_id;")
     first_name_lst = []
     last_name_lst = []
     desc = []
     position = []
     company = []
+    userid = []
     for obj in cursor:
       first_name_lst.append(obj[0])
       last_name_lst.append(obj[1])
       desc.append(obj[2])
       position.append(obj[3])
       company.append(obj[4])
+      userid.append(obj[5])
     cursor.close()
     
     first_name_lst = [re.sub('_', ' ', obj) for obj in first_name_lst]
@@ -227,11 +231,11 @@ def feed():
     pos_key = "Skills"
     co_key = "School"
     
-    for name, bio, pos, co in zip(names, desc, position, company):
+    for name, bio, pos, co, id in zip(names, desc, position, company, userid):
       data.append({'name': name, 'bio': bio, 
                    'img': "https://xsgames.co/randomusers/assets/avatars/pixel/" + str(names.index(name))+ ".jpg",
-                   'position': pos, 'company':co, 'pos_key': pos_key, 'co_key': co_key})
-  
+                   'position': pos, 'company':co, 'pos_key': pos_key, 'co_key': co_key, 'id':id})
+ 
   return render_template("feed.html", data  = data)
 
 
