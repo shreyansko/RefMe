@@ -161,82 +161,180 @@ def signup():
   school =  g.conn.execute(text(school_q));
   schools = []
   for obj in school:
-      print(obj[0])
-      print(obj[1])
       schools.append({'id':obj[0], 'name':obj[1]})
   return render_template("signup.html", schools = schools)
 
+
+
 @app.route('/feed.html')
 def feed():
-  # Schools for autofilling drop down on signup
-  q = 'SELECT student_id, employee_id FROM users WHERE user_id = (:userid)';
-  user_group = g.conn.execute(text(q), userid = session['userid']); #session['userid']
-  user_group = user_group.fetchall()
-  data = []
-  # If the user is a student
-  if user_group[0][0] == 1:
-    session['user_group'] = 'Student'
-    cursor = g.conn.execute("SELECT  u.first_name, u.last_name, u.description, e.position, c.company_name, u.user_id FROM employee e LEFT JOIN users u ON e.employee_id = u.employee_id LEFT JOIN company c ON e.company_id = c.company_id;")
-    first_name_lst = []
-    last_name_lst = []
-    desc = []
-    position = []
-    company = []
-    userid = []
-    for obj in cursor:
-      first_name_lst.append(obj[0])
-      last_name_lst.append(obj[1])
-      desc.append(obj[2])
-      position.append(obj[3])
-      company.append(obj[4])
-      userid.append(obj[5])
-    cursor.close()
+    try:
+        if session['user_group'] =='Student':
+            user_group = [[1, None]]
+        elif session['user_group'] =='Employee':
+            user_group = [[None, 1]]
+    except KeyError:
+        q = 'SELECT student_id, employee_id FROM users WHERE user_id = (:userid)';
+        user_group = g.conn.execute(text(q), userid = session['userid']); #session['userid']
+        user_group = user_group.fetchall()
+        
+        
+    data = []
+    # If the user is a student
+    if type(user_group[0][0]) == int:
+        filter_lst = []
+        filter_q = "SELECT DISTINCT company_name FROM company";
+        filter_cursor = g.conn.execute(filter_q)
+        for obj in filter_cursor:
+            filter_lst.append(obj[0])
+        
+        session['user_group'] = 'Student'
+        cursor = g.conn.execute("SELECT  u.first_name, u.last_name, u.description, e.position, c.company_name, u.user_id FROM employee e LEFT JOIN users u ON e.employee_id = u.employee_id LEFT JOIN company c ON e.company_id = c.company_id;")
+        first_name_lst = []
+        last_name_lst = []
+        desc = []
+        position = []
+        company = []
+        userid = []
+        for obj in cursor:
+            first_name_lst.append(obj[0])
+            last_name_lst.append(obj[1])
+            desc.append(obj[2])
+            position.append(obj[3])
+            company.append(obj[4])
+            userid.append(obj[5])
+        cursor.close()
+        
+        first_name_lst = [re.sub('_', ' ', obj) for obj in first_name_lst]
+        names = []
+        for first, last in zip(first_name_lst, last_name_lst):
+         names.append(first + " " + last)
+        pos_key = "Position"
+        co_key = "Company"
+        
+        for name, bio, pos, co, id in zip(names, desc, position, company, userid):
+            data.append({'name': name, 'bio': bio, 
+                        'img': "https://xsgames.co/randomusers/assets/avatars/pixel/" + str(names.index(name))+ ".jpg",
+                        'position': pos, 'company':co, 'pos_key': pos_key, 'co_key': co_key, 'id':id})
     
-    first_name_lst = [re.sub('_', ' ', obj) for obj in first_name_lst]
-    names = []
-    for first, last in zip(first_name_lst, last_name_lst):
-      names.append(first + " " + last)
-    pos_key = "Position"
-    co_key = "Company"
+    # If user is an employee
+    elif user_group[0][0] == None:
+        filter_lst = []
+        filter_q = "SELECT DISTINCT skills FROM student;";
+        filter_cursor = g.conn.execute(filter_q)
+        for obj in filter_cursor:
+            filter_lst.append(obj[0])
+        
+        session['user_group'] = 'Employee'
+        cursor = g.conn.execute("SELECT  u.first_name, u.last_name, u.description, s.skills, sl.school_name, u.user_id FROM student s LEFT JOIN users u ON s.student_id = u.student_id LEFT JOIN school sl ON u.school_id = sl.school_id;")
+        first_name_lst = []
+        last_name_lst = []
+        desc = []
+        position = []
+        company = []
+        userid = []
+        for obj in cursor:
+            first_name_lst.append(obj[0])
+            last_name_lst.append(obj[1])
+            desc.append(obj[2])
+            company.append(obj[3])
+            position.append(obj[4])
+            userid.append(obj[5])
+        cursor.close()
+        
+        first_name_lst = [re.sub('_', ' ', obj) for obj in first_name_lst]
+        names = []
+        for first, last in zip(first_name_lst, last_name_lst):
+         names.append(first + " " + last)
+        
+        pos_key = "Skills"
+        co_key = "School"
+        
+        for name, bio, pos, co, id in zip(names, desc, position, company, userid):
+            data.append({'name': name, 'bio': bio, 
+                        'img': "https://xsgames.co/randomusers/assets/avatars/pixel/" + str(names.index(name))+ ".jpg",
+                        'position': pos, 'company':co, 'pos_key': co_key, 'co_key': pos_key, 'id':id})
+    print(filter_lst)
+    return render_template("feed.html", data  = data, filter_lst = filter_lst)
+
+@app.route('/filter', methods=['POST'])
+def filter():
     
-    for name, bio, pos, co, id in zip(names, desc, position, company, userid):
-      data.append({'name': name, 'bio': bio, 
-                   'img': "https://xsgames.co/randomusers/assets/avatars/pixel/" + str(names.index(name))+ ".jpg",
-                   'position': pos, 'company':co, 'pos_key': pos_key, 'co_key': co_key, 'id':id})
-  
-  # If user is an employee
-  elif user_group[0][0] == None:
-    session['user_group'] = 'Employee'
-    cursor = g.conn.execute("SELECT  u.first_name, u.last_name, u.description, s.skills, sl.school_name, u.user_id FROM student s LEFT JOIN users u ON s.student_id = u.student_id LEFT JOIN school sl ON u.school_id = sl.school_id;")
-    first_name_lst = []
-    last_name_lst = []
-    desc = []
-    position = []
-    company = []
-    userid = []
-    for obj in cursor:
-      first_name_lst.append(obj[0])
-      last_name_lst.append(obj[1])
-      desc.append(obj[2])
-      position.append(obj[3])
-      company.append(obj[4])
-      userid.append(obj[5])
-    cursor.close()
+    filter_val = request.form['filter-user']
+    print(filter_val)
+    if (filter_val != 'all') and (session['user_group'] == 'Student'):
+        q = "SELECT  u.first_name, u.last_name, u.description, e.position, c.company_name, u.user_id FROM employee e LEFT JOIN users u ON e.employee_id = u.employee_id LEFT JOIN company c ON e.company_id = c.company_id WHERE c.company_name = (:filter_val)";
+        cursor = g.conn.execute(text(q), filter_val = filter_val);
+        print(("SELECT  u.first_name, u.last_name, u.description, e.position, c.company_name, u.user_id FROM employee e LEFT JOIN users u ON e.employee_id = u.employee_id LEFT JOIN company c ON e.company_id = c.company_id WHERE c.company_name ={}").format(filter_val))
+        data = []
+        first_name_lst = []
+        last_name_lst = []
+        desc = []
+        position = []
+        company = []
+        userid = []
+        for obj in cursor:
+            first_name_lst.append(obj[0])
+            last_name_lst.append(obj[1])
+            desc.append(obj[2])
+            position.append(obj[3])
+            company.append(obj[4])
+            userid.append(obj[5])
+        cursor.close()
+        
+        first_name_lst = [re.sub('_', ' ', obj) for obj in first_name_lst]
+        names = []
+        for first, last in zip(first_name_lst, last_name_lst):
+            names.append(first + " " + last)
+        pos_key = "Position"
+        co_key = "Company"
+        
+        for name, bio, pos, co, id in zip(names, desc, position, company, userid):
+            data.append({'name': name, 'bio': bio, 
+                        'img': "https://xsgames.co/randomusers/assets/avatars/pixel/" + str(names.index(name))+ ".jpg",
+                        'position': pos, 'company':co, 'pos_key': pos_key, 'co_key': co_key, 'id':id})
+                
+            
+        return render_template("feed.html", data  = data)
+        
+    elif (filter_val != 'all') and (session['user_group'] == 'Employee'):
+        q = f"SELECT  u.first_name, u.last_name, u.description, s.skills, sl.school_name, u.user_id FROM student s LEFT JOIN users u ON s.student_id = u.student_id LEFT JOIN school sl ON u.school_id = sl.school_id WHERE s.skills = '{filter_val}'";
+        cursor = g.conn.execute(text(q));
+        print(q)
+        data = []
+        first_name_lst = []
+        last_name_lst = []
+        desc = []
+        position = []
+        company = []
+        userid = []
+        for obj in cursor:
+            first_name_lst.append(obj[0])
+            last_name_lst.append(obj[1])
+            desc.append(obj[2])
+            company.append(obj[3])
+            position.append(obj[4])
+            userid.append(obj[5])
+        cursor.close()
+        
+        first_name_lst = [re.sub('_', ' ', obj) for obj in first_name_lst]
+        names = []
+        for first, last in zip(first_name_lst, last_name_lst):
+          names.append(first + " " + last)
+        
+        pos_key = "Skills"
+        co_key = "School"
+        
+        for name, bio, pos, co, id in zip(names, desc, position, company, userid):
+            data.append({'name': name, 'bio': bio, 
+                        'img': "https://xsgames.co/randomusers/assets/avatars/pixel/" + str(names.index(name))+ ".jpg",
+                        'position': pos, 'company':co, 'pos_key': co_key, 'co_key': pos_key, 'id':id})
+        return render_template("feed.html", data  = data)
     
-    first_name_lst = [re.sub('_', ' ', obj) for obj in first_name_lst]
-    names = []
-    for first, last in zip(first_name_lst, last_name_lst):
-      names.append(first + " " + last)
-    
-    pos_key = "Skills"
-    co_key = "School"
-    
-    for name, bio, pos, co, id in zip(names, desc, position, company, userid):
-      data.append({'name': name, 'bio': bio, 
-                   'img': "https://xsgames.co/randomusers/assets/avatars/pixel/" + str(names.index(name))+ ".jpg",
-                   'position': pos, 'company':co, 'pos_key': pos_key, 'co_key': co_key, 'id':id})
- 
-  return render_template("feed.html", data  = data)
+    elif filter_val == 'all':
+        print('ALL FILTER VALUE')
+        return redirect("/feed.html")
+        
 
 
 
@@ -562,7 +660,7 @@ def complete_signup():
 
     return redirect(url_for('index'))
 
-@app.route('/profile/<user_id>', methods=['GET'])
+@app.route('/profile/<user_id>', methods=['GET', 'POST'])
 def view_profile(user_id):
 
     q_profile = f"""
@@ -590,6 +688,7 @@ def view_profile(user_id):
 
     cursor = g.conn.execute(q_profile)
     data = dict(cursor.fetchall()[0])
+    
 
     is_student = data['student_id']
     user_group=""
@@ -612,12 +711,14 @@ def view_profile(user_id):
         student_data = cursor.fetchall()
 
         data['interested_position'] = [(i[0],i[1],i[2]) for i in student_data]
-
+   
+        print(data)
         return render_template("profile_view_student.html", data = data)
 
     else:
         data['user_group']="employee"
 
+        print(data)
         return render_template("profile_view_employee.html", data = data)
 
 
