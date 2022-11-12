@@ -11,11 +11,15 @@
     <div class="filter" width = "20%">
         <label for="filter">Filter feed:</label><br>
         <!-- <label for="uname"><b>Username</b></label> -->
-        <select id ="company" type="text" placeholder="Company" name="company-user">
-            {% for school in schools %}
-            <option value={{school.id}}>{{school.name}}</option>
+        <form method="POST" width = auto margin = auto action ="/filter">
+        <select id ="filter" type="text" name="filter-user">
+            <option value="all" selected>All</option>
+            {% for item in filter_lst %}
+            <option value="{{item}}">{{item}}</option>
             {%endfor%}
         </select>
+        <input type="submit" value="Filter" >
+        </form>
 
     </div>
     <div class="user_blob" >
@@ -23,12 +27,12 @@
         <div class="row">
             
             <div>
-                <img src={{item.img}} alt="user image" height = "80%" > 
+                <img class = "user_img" src={{item.img}} alt="user image" height = "80%" > 
             </div>
             <div>
                 <p><h3>{{item.name}}</h3></p>
-                <p>{{item.co_key}}: {{item.company}} </p>
-                <p> {{item.pos_key}}: {{item.position}} </p>
+                <p>{{item.co_key}}:{{item.company}}</p>
+                <p> {{item.pos_key}}:{{item.position}}</p>
             </div>
             <a href= "/profile/{{item.id}}" onclick="viewProfile()">
                 <span class="link"></span></a>
@@ -56,5 +60,14 @@
         };
     };
 
+    function viewProfile(){
+        var img =  document.getElementsByTagName("img").src;
+        $.ajax({
+            url: '/profile/<user_id>',
+            type: 'POST',
+            img: img
+        }); 
+        console.log(img);
+    };
 </script>
 </html>
