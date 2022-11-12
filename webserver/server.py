@@ -172,6 +172,7 @@ def feed():
   q = 'SELECT student_id, employee_id FROM users WHERE user_id = (:userid)';
   user_group = g.conn.execute(text(q), userid = session['userid']); #session['userid']
   user_group = user_group.fetchall()
+
   data = []
   # If the user is a student
   if user_group[0][0] == 1:
@@ -235,7 +236,7 @@ def feed():
       data.append({'name': name, 'bio': bio, 
                    'img': "https://xsgames.co/randomusers/assets/avatars/pixel/" + str(names.index(name))+ ".jpg",
                    'position': pos, 'company':co, 'pos_key': pos_key, 'co_key': co_key, 'id':id})
- 
+
   return render_template("feed.html", data  = data)
 
 
