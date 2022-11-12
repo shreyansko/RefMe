@@ -50,6 +50,12 @@
     align-items: center;
     margin-top: 0.8%;
   }
+
+  .topnav .form{
+    align-items: center;
+    float: center;
+
+  }
   
   /* When the screen is less than 600px wide, stack the links and the search field vertically instead of horizontally */
   @media screen and (max-width: 600px) {
@@ -94,14 +100,30 @@
       justify-content: center;
       
   }
+
+  .user_blob{
+    
+    align-items: center;
+    display: flex; 
+    display: -webkit-box;
+    /* display: -ms-flexbox; */
+    justify-content: center;
+    -ms-flex-pack: distribute;
+    flex-wrap: wrap;
+    padding-left: 12%;
+    
+
+  }
   .row {
-      float: right;
+      justify-content: left;
+      /* float: center; */
       display: flex;
       flex-wrap: wrap;
       border:1px solid black;
       height: 8rem;
-      width: 86%;
-      padding: .7rem;
+      width: 40%;
+      padding: 20px;
+      /* padding: .7rem; */
       margin: 10px 0;
       background: #fff;
       border-radius: 15px;
@@ -112,32 +134,11 @@
       grid-gap: .7rem;
       align-items: center;
       position:relative;
-      
-      /* absolute; */
-
-  & > * {
-    margin: 1000;
-    padding: 1000;
-    }
-    
-
-  &--text {
-      h3, p{
-        line-height: 1.5;
-        margin: 0;
-      }
-    
-    h3 {
-      font-size: .9rem;
-    }
-    
-    p {
-      font-size: 1px;
-      /* overflow: hidden; */
-      
-    }
+      margin-right:30px;
   }
-    
+      
+p{
+font-size: 13.5px;
 }
 
 
