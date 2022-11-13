@@ -8,6 +8,13 @@ table, th, td {
 
 <link rel="stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/profile.css') }}">
 
+<div class="topnav">
+  <a href="feed.html">Feed</a>
+  <a class="active" href = "#">My Profile</a>
+  
+  <button id = "logOut" type="button" class="float-left submit-button" style = "margin-left: 76%; margin-top: 0.8%;position: absolute">Log Out</button>
+</div>
+
 <div class="card">
 
 <form action="/save_profile" method="post">
@@ -102,3 +109,9 @@ table, th, td {
 
 
 </html>
+
+<script>
+  document.getElementById("logOut").onclick = function () {
+      location.href = "/";
+  };
+</script>

@@ -31,8 +31,10 @@ textarea{
 form {
     width: 200px;
     text-align: left;
-    padding-bottom: 10%;
-    margin-left: auto;
+    padding-bottom: 2%;
+    margin-right: auto;
+    float: left;
+    padding-right: 80%;
     
 }
 

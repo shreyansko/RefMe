@@ -14,6 +14,15 @@ input[type=text]{
     box-sizing: border-box;
 }
 
+input[type=password]{
+    width: 100%;
+    padding: 12px 20px;
+    margin: 2px 2px;
+    display: inline-block;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+}
+
 select{
     width: 100%;
     font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica Neue,Arial,Noto Sans,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji,FontAwesome;
@@ -31,9 +40,10 @@ textarea{
 form {
     width: 200px;
     text-align: left;
-    padding-bottom: 10%;
-    margin-left: auto;
-    
+    padding-bottom: 2%;
+    margin-right: auto;
+    float: left;
+    padding-right: 80%;
 }
 
 .signup{

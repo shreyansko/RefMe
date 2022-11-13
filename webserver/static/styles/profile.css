@@ -1,3 +1,31 @@
+.topnav {
+  overflow: hidden;
+  background-color: #e9e9e9;
+}
+
+/* Style the links inside the navigation bar */
+.topnav a {
+  float: left;
+  display: block;
+  color: black;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+  font-size: 17px;
+}
+
+/* Change the color of links on hover */
+.topnav a:hover {
+  background-color: #ddd;
+  color: black;
+}
+
+/* Style the "active" element to highlight the current page */
+.topnav a.active {
+  background-color: #2196F3;
+  color: white;
+}
+
 .card {
   /*box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);*/
   max-width: 500px;
@@ -23,7 +51,7 @@ form {
 }
 
 div {
-  max-width: 500px;
+  max-width: 100%;
   margin: auto;
   text-align: left;
 }
