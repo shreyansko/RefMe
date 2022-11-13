@@ -333,31 +333,36 @@ def filter():
 # Example of adding new data to the database
 @app.route('/add', methods=['POST'])
 def add():
-  username = request.form['username-user']
-  password = request.form['password-user']
-  verify_pass = request.form['verify-password-user']
-  fname = request.form['firstname-user']
-  lname = request.form['lastname-user']
-  contact_info = request.form['contact-user']
-  desc = request.form['bio-user']
-  school = request.form['school-user']
-  interests = request.form.getlist('userinterests')
-  if password != verify_pass:
-    data = ["Passwords do not match! Try again..."]
-    return render_template('signup.html', data = data)
-  else:
-    user_group = request.form['user_group']
-    # print(fname, lname, contact_info, desc, interests, user_group)
-    cmd = 'INSERT INTO user_tmp(user_id, password, first_name, last_name, contact_info, description, school_id, interests, user_group, skills, position, company_id) VALUES ((:username), (:password), (:fname), (:lname), (:contact_info), (:desc), (:school), (:interests), (:user_group), (:skills), (:position), (:company))';
-    g.conn.execute(text(cmd), username = username, password = password, fname = fname, lname = lname, contact_info = contact_info, desc = desc, school = school, interests = interests, user_group = user_group, skills = None, position = None, company = None);
-    
-    session['userid'] = username
-    print("Session userid:", session['userid'])
-    
-    if user_group == 'Student':
-      return redirect(url_for('student_signup')) ## Input next page link
-    elif user_group == 'Employee':
-      return redirect(url_for('employee_signup'))
+    school_q = 'SELECT school_id, school_name FROM school';
+    school =  g.conn.execute(text(school_q));
+    schools = []
+    for obj in school:
+        schools.append({'id':obj[0], 'name':obj[1]})
+    username = request.form['username-user']
+    password = request.form['password-user']
+    verify_pass = request.form['verify-password-user']
+    fname = request.form['firstname-user']
+    lname = request.form['lastname-user']
+    contact_info = request.form['contact-user']
+    desc = request.form['bio-user']
+    school = request.form['school-user']
+    interests = request.form.getlist('userinterests')
+    if password != verify_pass:
+        data = ["Passwords do not match! Try again..."]
+        return render_template('signup.html', data = data, schools = schools)
+    else:
+        user_group = request.form['user_group']
+        # print(fname, lname, contact_info, desc, interests, user_group)
+        cmd = 'INSERT INTO user_tmp(user_id, password, first_name, last_name, contact_info, description, school_id, interests, user_group, skills, position, company_id) VALUES ((:username), (:password), (:fname), (:lname), (:contact_info), (:desc), (:school), (:interests), (:user_group), (:skills), (:position), (:company))';
+        g.conn.execute(text(cmd), username = username, password = password, fname = fname, lname = lname, contact_info = contact_info, desc = desc, school = school, interests = interests, user_group = user_group, skills = None, position = None, company = None);
+        
+        session['userid'] = username
+        print("Session userid:", session['userid'])
+        
+        if user_group == 'Student':
+            return redirect(url_for('student_signup')) ## Input next page link
+        elif user_group == 'Employee':
+            return redirect(url_for('employee_signup'))
 
 
 @app.route('/login')
