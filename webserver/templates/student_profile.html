@@ -7,11 +7,11 @@ table, th, td {
 </style>
 
 
-<h1>
-    THIS IS A USER PROFILE PAGE
-</h1>
+<link rel="stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/profile.css') }}">
 
-<button><a style="text-decoration: none;" href="/">Exit</a></button>
+<div class="card">
+
+
 <form action="/save_profile" method="post">
 
   <p id="profile_info" name="profile_info">
@@ -39,7 +39,6 @@ table, th, td {
       <textarea id="description" name="description" rows="4" cols="50">
       {{p.description}}
       </textarea>
-      <br></br>
 
     {% endfor %}
 </p>
@@ -52,8 +51,7 @@ table, th, td {
 <form action='/save_interest' method="POST">
 
     <input type="hidden" name="user_id" id="user_id" value="{{ user_id }}">
-    Add additional positions at given company you are interested in:
-    <br/><br/>
+    <h4>Add additional positions at given company you are interested in:</h4>
     {{ form.csrf_token }}
     {{ form.company_name }}
     {{ form.position_title }}
@@ -103,7 +101,10 @@ table, th, td {
     {% endfor %}
 
     </table>
-
 </p>
+
+</div>
+
+<button><a style="text-decoration: none;" href="/">Exit</a></button>
 
 </html>
