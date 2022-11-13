@@ -5,12 +5,33 @@
   text-align: center;
 }
 
+.borderexample {
+ border-width:3px;
+ border-style:solid;
+ border-color:#287EC7;
+ max-width: 500px;
+ padding: 20px;
+}
+
 form {
   /*box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);*/
   max-width: 500px;
   margin: auto;
-  text-align: right;
+  text-align: left;
 }
+
+div {
+  max-width: 500px;
+  margin: auto;
+  text-align: left;
+}
+
+a {
+  max-width: 500px;
+  margin: auto;
+  text-align: left;
+}
+
 
 /*button {
   border: none;
@@ -27,7 +48,8 @@ form {
 */
 button {
   text-decoration: none;
-  font-size: 22px;
+  font-size: 15px;
   color: black;
-  text_align: right;
+  text_align: center;
+  location: center;
 }

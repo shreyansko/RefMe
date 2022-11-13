@@ -8,9 +8,9 @@ table, th, td {
 
 <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/message.css') }}">
 <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/profile.css') }}">
-<link rel='stylesheet' href="https://fonts.googleapis.com/css?family=Lexend Deca">
 
-<div id = "student_profile_view"> 
+
+<div id = "student_profile_view" class="borderexample"> 
 
 {% block content %}
 <div class="container">
@@ -22,28 +22,29 @@ table, th, td {
 </div>
 {% endblock %}
   
-    User Id: {{data.user_id}}
+    <strong>User Id</strong>: {{data.user_id}}
     <br></br>
 
-    First Name: {{data.first_name}}
+    <strong>First Name</strong>: {{data.first_name}}
     <br></br>
 
-    Last Name: {{data.last_name}}
+    <strong>Last Name</strong>: {{data.last_name}}
     <br></br>
 
-    Contact Info: {{data.contact_info}}
+    <strong>Contact Info</strong>: {{data.contact_info}}
     <br></br>
 
-    School name: {{data.school_name}}
+    <strong>School name</strong>: {{data.school_name}}
     <br></br>
 
-    Interest: {{data.interests}}
+    <strong>Interest</strong>: {{data.interests}}
     <br></br>
 
-    Description:
+    <strong>Description</strong>:
     <p>{{data.description}}</p>
     
-    <br></br>
+
+    <h3>{{data.first_name}} is looking for referrals for...</h3>
 
     <table>
       <tr>
