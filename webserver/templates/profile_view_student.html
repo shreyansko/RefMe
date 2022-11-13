@@ -10,7 +10,7 @@ table, th, td {
 <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/profile.css') }}">
 
 
-<div id = "student_profile_view" class="borderexample"> 
+<div id = "student_profile_view" class="border_card"> 
 
 {% block content %}
 <div class="container">
@@ -44,7 +44,7 @@ table, th, td {
     <p>{{data.description}}</p>
     
 
-    <h3>{{data.first_name}} is looking for referrals for...</h3>
+    <h3>Refer {{data.first_name}} for...</h3>
 
     <table>
       <tr>

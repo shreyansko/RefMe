@@ -8,6 +8,8 @@ table, th, td {
 
 <link rel="stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/profile.css') }}">
 
+<div class="card">
+
 <form action="/save_profile" method="post">
 
   <p id="profile_info" name="profile_info">
@@ -92,6 +94,8 @@ table, th, td {
     {% endfor %}
 
     </table>
+</div>
+
 </div>
 
 <button><a style="text-decoration: none;" href="/feed.html">Exit</a></button>

@@ -8,6 +8,7 @@ table, th, td {
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/message.css') }}">
+<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/profile.css') }}">
 
 <body>
 
@@ -22,17 +23,14 @@ table, th, td {
 {% endblock %}
 
 
-<form action="/like" method='POST'>
+<div id = "employee_profile_view" class="border_card">
 
+    <form action="/like" method='POST'>
     <button style="font-size:18px"> Send Like <i class="fa fa-handshake-o"></i></button>
-
     <input type="hidden" name="employee_liked" id="employee_liked" value="{{ data.user_id }}">
-
-</form>
-
-<i class='fas fa-handshake'></i>
-
-<div id = "employee_profile_view" class="card">
+    </form>
+    <i class='fas fa-handshake'></i>
+    <br>
   
     <strong>User Id</strong>: {{data.user_id}}
     <br></br>
