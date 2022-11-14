@@ -3,22 +3,10 @@
 
     </head>
 
-    {% block content %}
-    <div class="container">
-        {% for category, message in get_flashed_messages(with_categories=True) %}
-
-        <div class="alert alert-{{category}}"> {{ message }}</div>    
-        {% endfor %}
-        {% block page_content %}{% endblock %}
-    </div>
-    {% endblock %}
-
     <body>
         <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/index.css') }}">
 
-        
         <div id = "login-page"> 
-
           
             <div class="imgcontainer"> 
                
