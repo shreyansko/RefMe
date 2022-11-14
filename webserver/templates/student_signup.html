@@ -10,9 +10,15 @@ table, th, td {
 </style>
 </head>
 
-<h1>
-    THIS IS A STUDENT SIGNUP PAGE
-</h1>
+{% block content %}
+    <div class="container">
+        {% for category, message in get_flashed_messages(with_categories=True) %}
+
+        <div class="alert alert-{{category}}"> {{ message }}</div>    
+        {% endfor %}
+        {% block page_content %}{% endblock %}
+    </div>
+{% endblock %}
 
 <body>
   <form method="POST">

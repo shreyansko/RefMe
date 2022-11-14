@@ -16,49 +16,40 @@ table, th, td {
 </div>
 
 <div class="card">
-
-<form action="/save_profile" method="post">
-
+  <form action="/save_profile" method="post">
   <p id="profile_info" name="profile_info">
-
     {% for p in profile_info %}
       <strong>User Id</strong>: {{user_id}}
       <input type="hidden" name="user_id" id="user_id" value="{{ user_id }}">
-
       <br></br>
-
       <strong>First Name</strong>: <input id="first_name" name = "first_name" value={{p.first_name}}> 
       <br></br>
-
       <strong>Last Name</strong>: <input id="last_name" name = "last_name" value={{p.last_name}}>
       <br></br>
-
       <strong>Contact Info</strong>: <input id="contact_info" name = "contact_info" value={{p.contact_info}}>
       <br></br>
-
       <strong>School name</strong>: {{p.school_name}}
       <br></br>
-
+      <strong>Interest</strong>: {{p.interests}}
+      <br></br>
       <strong>Company</strong>: {{p.company_name}}
       <br></br>
-
       <strong>Position</strong>: {{p.position}}
       <br></br>
-
       <strong>Description</strong>:
       <br></br>
       <textarea id="description" name="description" rows="4" cols="50">
       {{p.description}}
       </textarea>
     {% endfor %}
-</p>
-<input type="submit" value="Save change">
-</form>
-<br></br>
+  </p>
+  <input type="submit" value="Save change">
+  </form>
+  <br></br>
 
 
-<div id="job_info" name="job_info">
-    <h3>List of referrals</h3>
+  <div id="job_info" name="job_info">
+    <h3>List of referral requests you sent</h3>
     <table>
       <tr>
         <th>User Id</th>
@@ -72,14 +63,12 @@ table, th, td {
       <td>{{ j.position_title }}</td>
     </tr>
     {% endfor %}
-
     </table>
+  </div>
 
-</div>
 
-
-<div id="like_info" name="like_info">
-    <h3>List of student likes</h3>
+  <div id="like_info" name="like_info">
+    <h3>List of student who sent you likes</h3>
     <table>
       <tr>
         <th>User Id</th>
@@ -99,17 +88,12 @@ table, th, td {
       <td> <a style="text-decoration: none;" href="/profile/{{j.user_id}}"> Link </a>  <td>
     </tr>
     {% endfor %}
-
     </table>
-</div>
+  </div>
 
 </div>
-
-<button><a style="text-decoration: none;" href="/feed.html">Exit</a></button>
-
 
 </html>
-
 <script>
   document.getElementById("logOut").onclick = function () {
       location.href = "/";

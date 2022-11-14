@@ -4,6 +4,10 @@
 table, th, td {
   border: 1px solid black;
 }
+/*for background color*/
+body {
+  background-color: #ddd;
+}
 </style>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
@@ -12,59 +16,47 @@ table, th, td {
 
 <body>
 
-{% block content %}
-<div class="container">
-    {% for category, message in get_flashed_messages(with_categories=True) %}
-
-    <div class="alert alert-{{category}}"> {{ message }}</div>    
-    {% endfor %}
-    {% block page_content %}{% endblock %}
-</div>
-{% endblock %}
-
-
 <div id = "employee_profile_view" class="border_card">
+
+    {% block content %}
+    <div class="container">
+        {% for category, message in get_flashed_messages(with_categories=True) %}
+
+        <div class="alert alert-{{category}}"> {{ message }}</div>    
+        {% endfor %}
+        {% block page_content %}{% endblock %}
+    </div>
+    {% endblock %}
 
     <form action="/like" method='POST'>
     <button style="font-size:18px"> Send Like <i class="fa fa-handshake-o"></i></button>
+    <br></br>
     <input type="hidden" name="employee_liked" id="employee_liked" value="{{ data.user_id }}">
     </form>
     <i class='fas fa-handshake'></i>
     <br>
-  
     <strong>User Id</strong>: {{data.user_id}}
     <br></br>
-
     <strong>First Name</strong>: {{data.first_name}}
     <br></br>
-
     <strong>Last Name</strong>: {{data.last_name}}
     <br></br>
-
     <strong>School name</strong>: {{data.school_name}}
     <br></br>
-
     <strong>Company</strong>: {{data.company_name}}
     <br></br>
-
     <strong>Position</strong>: {{data.position}}
     <br></br>
-
     <strong>Interest</strong>: {{data.interests}}
     <br></br>
-
     <strong>Description</strong>:
     <p>{{data.description}}</p>
-    
     <br></br>
-
+    <br></br>
     <button><a style="text-decoration: none;" href="/feed.html">Exit</a></button>
 
 </div>
 
 </body>
-
-
-
 
 </html>

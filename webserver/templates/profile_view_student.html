@@ -4,12 +4,17 @@
 table, th, td {
   border: 1px solid black;
 }
+/*for background color*/
+body {
+  background-color: #ddd;
+}
 </style>
 
 <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/message.css') }}">
 <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/profile.css') }}">
 
-
+<body>
+  
 <div id = "student_profile_view" class="border_card"> 
 
 {% block content %}
@@ -24,28 +29,21 @@ table, th, td {
   
     <strong>User Id</strong>: {{data.user_id}}
     <br></br>
-
     <strong>First Name</strong>: {{data.first_name}}
     <br></br>
-
     <strong>Last Name</strong>: {{data.last_name}}
     <br></br>
-
     <strong>Contact Info</strong>: {{data.contact_info}}
     <br></br>
-
     <strong>School name</strong>: {{data.school_name}}
     <br></br>
-
     <strong>Interest</strong>: {{data.interests}}
     <br></br>
-
     <strong>Description</strong>:
     <p>{{data.description}}</p>
     
 
     <h3>Refer {{data.first_name}} for...</h3>
-
     <table>
       <tr>
         <th>Company</th>
@@ -63,12 +61,12 @@ table, th, td {
         </tr>
         </form>
         {% endfor %}
-
     </table>
     <br></br>
 
     <button><a style="text-decoration: none;" href="/feed.html">Exit</a></button>
 
 </div>
+</body>
 
 </html>

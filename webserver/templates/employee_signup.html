@@ -1,8 +1,14 @@
 <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/employee_signup.css') }}">
 
-<h1>
-    THIS IS A EMPLOYEE SIGNUP PAGE
-</h1>
+{% block content %}
+    <div class="container">
+        {% for category, message in get_flashed_messages(with_categories=True) %}
+
+        <div class="alert alert-{{category}}"> {{ message }}</div>    
+        {% endfor %}
+        {% block page_content %}{% endblock %}
+    </div>
+{% endblock %}
 
 <form method="post">
   Company:

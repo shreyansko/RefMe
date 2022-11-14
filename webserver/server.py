@@ -1,13 +1,10 @@
 #!/usr/bin/env python2.7
 #%% 
 """
-Columbia W4111 Intro to databases
-Example webserver
-To run locally
-    python server.py
-Go to http://localhost:8111 in your browser
-A debugger such as "pdb" may be helpful for debugging.
-Read about it online.
+
+Columbia W4111 Intro to Databases Project Part 3
+Author: Gyung Hyun Je, Shrey Kothari
+
 """
 
 import os
@@ -20,21 +17,11 @@ from flask import Flask, request, render_template, g, redirect, Response, jsonif
 
 from flask_wtf import FlaskForm
 from wtforms import SelectField
+from datetime import timedelta
 
 tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 app = Flask(__name__, template_folder=tmpl_dir)
 
-
-
-# XXX: The Database URI should be in the format of: 
-#
-#     postgresql://USER:PASSWORD@<IP_OF_POSTGRE_SQL_SERVER>/<DB_NAME>
-#
-# For example, if you had username ewu2493, password foobar, then the following line would be:
-#
-#     DATABASEURI = "postgresql://ewu2493:foobar@<IP_OF_POSTGRE_SQL_SERVER>/postgres"
-#
-# For your convenience, we already set it to the class database
 
 # Use the DB credentials you received by e-mail
 DB_USER = "sk4819"
@@ -46,10 +33,6 @@ DATABASEURI = "postgresql://"+DB_USER+":"+DB_PASSWORD+"@"+DB_SERVER+"/proj1part2
 
 SECRET_KEY = os.urandom(32)
 app.config['SECRET_KEY'] = SECRET_KEY
-#%% 
-#
-# This line creates a database engine that knows how to connect to the URI above
-#
 engine = create_engine(DATABASEURI)
 
 
@@ -71,10 +54,6 @@ engine.execute("""CREATE TABLE IF NOT EXISTS user_tmp (
     FOREIGN KEY (company_id) REFERENCES Company(company_id),
     completed bool default false
 );""")
-# engine.execute("""INSERT INTO test(first_name, surname,contact_info,description,interests,user_group) VALUES ('grace hopper'), ('alan turing'), ('ada lovelace');""")
-
-
-#%% 
 
 @app.before_request
 def before_request():
@@ -91,6 +70,13 @@ def before_request():
     import traceback; traceback.print_exc()
     g.conn = None
 
+
+@app.before_request
+def make_session_permanent():
+    session.permanent = True
+    app.permanent_session_lifetime = timedelta(minutes=10)
+
+
 @app.teardown_request
 def teardown_request(exception):
   """
@@ -103,19 +89,6 @@ def teardown_request(exception):
     pass
 
 
-#
-# @app.route is a decorator around index() that means:
-#   run index() whenever the user tries to access the "/" path using a GET request
-#
-# If you wanted the user to go to e.g., localhost:8111/foobar/ with POST or GET then you could use
-#
-#       @app.route("/foobar/", methods=["POST", "GET"])
-#
-# PROTIP: (the trailing / in the path is important)
-# 
-# see for routing: http://flask.pocoo.org/docs/0.10/quickstart/#routing
-# see for decorators: http://simeonfranklin.com/blog/2012/jul/1/python-decorators-in-12-steps/
-#
 @app.route('/')
 def index():
   session.clear()
@@ -146,7 +119,6 @@ def login_user():
     return redirect('/feed.html')
 
 
-
 @app.route('/signup.html')
 def signup():
   school_q = 'SELECT school_id, school_name FROM school';
@@ -155,7 +127,6 @@ def signup():
   for obj in school:
       schools.append({'id':obj[0], 'name':obj[1]})
   return render_template("signup.html", schools = schools)
-
 
 
 @app.route('/feed.html')
@@ -249,6 +220,7 @@ def feed():
     print(filter_lst)
     return render_template("feed.html", data  = data, filter_lst = filter_lst)
 
+
 @app.route('/filter', methods=['POST'])
 def filter():
     
@@ -328,8 +300,6 @@ def filter():
         return redirect("/feed.html")
         
 
-
-
 # Example of adding new data to the database
 @app.route('/add', methods=['POST'])
 def add():
@@ -403,6 +373,7 @@ def populate_form(form):
     form.tool.choices = skills_list
 
     return form
+
 
 @app.route("/student_signup", methods=['GET','POST'])
 def student_signup():
@@ -569,7 +540,8 @@ def complete_signup():
     try:
         g.conn.execute(q_user_info)
     except:
-        print("Registration not successful!")
+        flash("Registration did not go through :( ", "error")
+        redirect(request.referrer)
 
     q_group = f"""
         SELECT
@@ -596,7 +568,8 @@ def complete_signup():
         try:
             g.conn.execute(q_student)
         except:
-            print("Insert into student not successful!")
+            flash("Registration did not go through :( ", "error")
+            redirect(request.referrer)
 
         # record student interest in the student_interest table
         q_student_interst = f"""
@@ -613,7 +586,8 @@ def complete_signup():
         try:
             g.conn.execute(q_student_interst)
         except:
-            print("Insert into student interest not successful!")
+            flash("Registration did not go through :( ", "error")
+            redirect(request.referrer)
 
 
     elif user_group=='Employee':
@@ -635,26 +609,40 @@ def complete_signup():
         try:
             g.conn.execute(q_employee)
         except:
-            print("Insert into student not successful!")
+            flash("Registration did not go through :( ", "error")
+            redirect(request.referrer)
 
-
-    # check to drop records in the user_tmp if record exists in users table AND (student or employee) table
+    # drop records in the user_tmp
     q_drop_check = f"""
         delete from user_tmp
-        where user_id in (
+        where user_id = '{userid}'
+        ;
+    """
+    g.conn.execute(q_drop_check)
+
+
+    # finally check if the record has successfully been inserted to user table AND (student OR employee table)
+    q_check_success=f"""
+    select user_id
+    from users
+    where user_id in (
                 select u.user_id
                 from users u
                 left join student s on u.user_id = s.user_id
                 left join employee e on u.user_id = e.user_id
                 where (s.user_id is not null or e.user_id is not null)
                 )
-            and user_id = '{userid}'
-        ;
+        and user_id = '{userid}'
     """
 
-    g.conn.execute(q_drop_check)
+    try:
+        g.conn.execute(q_check_success)
+        flash("Registration success!", "info")
+    except:
+        pass
 
     return redirect(url_for('index'))
+
 
 @app.route('/profile/<user_id>', methods=['GET', 'POST'])
 def view_profile(user_id):
@@ -672,7 +660,7 @@ def view_profile(user_id):
             , c.company_name
             , e.position
             , a.description
-            , a.interests
+            , trim(trim(a.interests, '}}'), '{{') as interests
         from users a
         inner join school b on a.school_id = b.school_id
         left join student s on s.user_id = a.user_id
@@ -716,6 +704,7 @@ def view_profile(user_id):
 
         print(data)
         return render_template("profile_view_employee.html", data = data)
+
 
 @app.route('/like', methods=['POST'])
 def send_like():
@@ -841,6 +830,7 @@ def student_profile():
             , a.first_name
             , a.last_name
             , a.contact_info
+            , trim(trim(a.interests, '}}'), '{{') as interests
             , b.school_name
             , s.skills
             , c.company_name
@@ -858,12 +848,13 @@ def student_profile():
     cursor = g.conn.execute(q_basic_info)
     profile_info = cursor.fetchall()
 
-    q_refer_information = f"""
+    q_refer_info = f"""
             select 
                 i.position_title
                 , co.company_name
                 , case when i.require_referral=true then false else true end as received_referral
                 , u.contact_info as employee_contact_info
+                , u.user_id
             from student s
             inner join student_interest i on s.student_id = i.student_id
             inner join company co on co.company_id = i.company_id
@@ -874,7 +865,7 @@ def student_profile():
             where s.user_id='{user_id}'
     """
 
-    cursor = g.conn.execute(q_refer_information)
+    cursor = g.conn.execute(q_refer_info)
     job_info = cursor.fetchall()
 
     return render_template("student_profile.html", profile_info=profile_info, job_info=job_info, form=form, user_id=user_id)
@@ -895,6 +886,7 @@ def employee_profile():
             , a.first_name
             , a.last_name
             , a.contact_info
+            , trim(trim(a.interests, '}}'), '{{') as interests
             , b.school_name
             , s.skills
             , c.company_name
