@@ -7,6 +7,9 @@
 
             <form method="POST" width = auto margin = auto action ="/add">
             <div class="container" width = auto>
+                {% for mesg in user_error %}
+                <h3>{{ mesg }}</h3>
+                {% endfor %}
                 <label for="username">Username:</label><br>
                 <!-- <label for="uname"><b>Username</b></label> -->
                 <input id ="username" type="text" placeholder="Username" name="username-user" required value>

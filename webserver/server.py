@@ -121,12 +121,14 @@ def login_user():
 
 @app.route('/signup.html')
 def signup():
-  school_q = 'SELECT school_id, school_name FROM school';
-  school =  g.conn.execute(text(school_q));
-  schools = []
-  for obj in school:
-      schools.append({'id':obj[0], 'name':obj[1]})
-  return render_template("signup.html", schools = schools)
+    school_q = 'SELECT school_id, school_name FROM school';
+    school =  g.conn.execute(text(school_q));
+    schools = []
+    for obj in school:
+        schools.append({'id':obj[0], 'name':obj[1]})
+        
+    
+    return render_template("signup.html", schools = schools)
 
 
 @app.route('/feed.html')
@@ -303,12 +305,20 @@ def filter():
 # Example of adding new data to the database
 @app.route('/add', methods=['POST'])
 def add():
+    username_q = 'SELECT user_id FROM users';
+    users_in_db =  g.conn.execute(text(username_q));
+    users_db = []
+    for obj in users_in_db:
+        users_db.append(obj)
+    
     school_q = 'SELECT school_id, school_name FROM school';
     school =  g.conn.execute(text(school_q));
     schools = []
     for obj in school:
         schools.append({'id':obj[0], 'name':obj[1]})
     username = request.form['username-user']
+    if username in users_db:
+        user_error = ["Username already exists! Try a different one"]
     password = request.form['password-user']
     verify_pass = request.form['verify-password-user']
     fname = request.form['firstname-user']
@@ -319,7 +329,7 @@ def add():
     interests = request.form.getlist('userinterests')
     if password != verify_pass:
         data = ["Passwords do not match! Try again..."]
-        return render_template('signup.html', data = data, schools = schools)
+        return render_template('signup.html', data = data, schools = schools, user_error = user_error)
     else:
         user_group = request.form['user_group']
         # print(fname, lname, contact_info, desc, interests, user_group)
