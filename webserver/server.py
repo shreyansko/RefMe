@@ -518,6 +518,13 @@ def complete_signup():
 
     userid = session['userid']
 
+    # drop records in the user_tmp at various points in the funnel
+    q_drop_check = f"""
+        delete from user_tmp
+        where user_id = '{userid}'
+        ;
+    """
+
     q_user_info = f"""
       UPDATE user_tmp
       SET completed=true
@@ -526,7 +533,10 @@ def complete_signup():
     try:
         g.conn.execute(q_user_info)
     except:
-        print("The value did not set to true")
+        g.conn.execute(q_drop_check)
+        flash("Registration did not go through :( ", "error")
+        return redirect(request.referrer)
+
 
     # write everything in the user_temp to perm user table
     q_user_info = f"""
@@ -550,8 +560,9 @@ def complete_signup():
     try:
         g.conn.execute(q_user_info)
     except:
+        g.conn.execute(q_drop_check)
         flash("Registration did not go through :( ", "error")
-        redirect(request.referrer)
+        return redirect(request.referrer)
 
     q_group = f"""
         SELECT
@@ -578,8 +589,9 @@ def complete_signup():
         try:
             g.conn.execute(q_student)
         except:
+            g.conn.execute(q_drop_check)
             flash("Registration did not go through :( ", "error")
-            redirect(request.referrer)
+            return redirect(request.referrer)
 
         # record student interest in the student_interest table
         q_student_interst = f"""
@@ -596,8 +608,9 @@ def complete_signup():
         try:
             g.conn.execute(q_student_interst)
         except:
+            g.conn.execute(q_drop_check)
             flash("Registration did not go through :( ", "error")
-            redirect(request.referrer)
+            return redirect(request.referrer)
 
 
     elif user_group=='Employee':
@@ -619,17 +632,12 @@ def complete_signup():
         try:
             g.conn.execute(q_employee)
         except:
+            g.conn.execute(q_drop_check)
             flash("Registration did not go through :( ", "error")
-            redirect(request.referrer)
+            return redirect(request.referrer)
 
     # drop records in the user_tmp
-    q_drop_check = f"""
-        delete from user_tmp
-        where user_id = '{userid}'
-        ;
-    """
     g.conn.execute(q_drop_check)
-
 
     # finally check if the record has successfully been inserted to user table AND (student OR employee table)
     q_check_success=f"""
