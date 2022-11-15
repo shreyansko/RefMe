@@ -323,26 +323,27 @@ def add():
     desc = request.form['bio-user']
     school = request.form['school-user']
     interests = request.form.getlist('userinterests')
+    user_group = request.form['user_group']
     if password != verify_pass:
         data = ["Passwords do not match! Try again..."]
         return render_template('signup.html', data = data, schools = schools)
-    else:
-        user_group = request.form['user_group']
-        # print(fname, lname, contact_info, desc, interests, user_group)
-        cmd = 'INSERT INTO user_tmp(user_id, password, first_name, last_name, contact_info, description, school_id, interests, user_group, skills, position, company_id) VALUES ((:username), (:password), (:fname), (:lname), (:contact_info), (:desc), (:school), (:interests), (:user_group), (:skills), (:position), (:company))';
-        try:
-            g.conn.execute(text(cmd), username = username, password = password, fname = fname, lname = lname, contact_info = contact_info, desc = desc, school = school, interests = interests, user_group = user_group, skills = None, position = None, company = None);
-        except exc.IntegrityError:
-            user_error = ["Username already exists..Please choose a different one."]
-            return render_template('signup.html', user_error = user_error, schools = schools)
+    # else:
+   
+    # print(fname, lname, contact_info, desc, interests, user_group)
+    cmd = 'INSERT INTO user_tmp(user_id, password, first_name, last_name, contact_info, description, school_id, interests, user_group, skills, position, company_id) VALUES ((:username), (:password), (:fname), (:lname), (:contact_info), (:desc), (:school), (:interests), (:user_group), (:skills), (:position), (:company))';
+    try:
+        g.conn.execute(text(cmd), username = username, password = password, fname = fname, lname = lname, contact_info = contact_info, desc = desc, school = school, interests = interests, user_group = user_group, skills = None, position = None, company = None);
+    except exc.IntegrityError:
+        user_error = ["Username already exists..Please choose a different one."]
+        return render_template('signup.html', user_error = user_error, schools = schools)
+
+    session['userid'] = username
+    print("Session userid:", session['userid'])
     
-        session['userid'] = username
-        print("Session userid:", session['userid'])
-        
-        if user_group == 'Student':
-            return redirect(url_for('student_signup')) ## Input next page link
-        elif user_group == 'Employee':
-            return redirect(url_for('employee_signup'))
+    if user_group == 'Student':
+        return redirect(url_for('student_signup')) ## Input next page link
+    elif user_group == 'Employee':
+        return redirect(url_for('employee_signup'))
 
 
 @app.route('/login')
