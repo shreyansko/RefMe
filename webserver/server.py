@@ -1,10 +1,8 @@
 #!/usr/bin/env python2.7
 #%% 
 """
-
 Columbia W4111 Intro to Databases Project Part 3
 Author: Gyung Hyun Je, Shrey Kothari
-
 """
 
 import os
@@ -18,6 +16,7 @@ from flask import Flask, request, render_template, g, redirect, Response, jsonif
 from flask_wtf import FlaskForm
 from wtforms import SelectField
 from datetime import timedelta
+from sqlalchemy import exc
 
 tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 app = Flask(__name__, template_folder=tmpl_dir)
@@ -121,14 +120,12 @@ def login_user():
 
 @app.route('/signup.html')
 def signup():
-    school_q = 'SELECT school_id, school_name FROM school';
-    school =  g.conn.execute(text(school_q));
-    schools = []
-    for obj in school:
-        schools.append({'id':obj[0], 'name':obj[1]})
-        
-    
-    return render_template("signup.html", schools = schools)
+  school_q = 'SELECT school_id, school_name FROM school';
+  school =  g.conn.execute(text(school_q));
+  schools = []
+  for obj in school:
+      schools.append({'id':obj[0], 'name':obj[1]})
+  return render_template("signup.html", schools = schools)
 
 
 @app.route('/feed.html')
@@ -305,20 +302,19 @@ def filter():
 # Example of adding new data to the database
 @app.route('/add', methods=['POST'])
 def add():
-    username_q = 'SELECT user_id FROM users';
-    users_in_db =  g.conn.execute(text(username_q));
-    users_db = []
-    for obj in users_in_db:
-        users_db.append(obj)
-    
     school_q = 'SELECT school_id, school_name FROM school';
     school =  g.conn.execute(text(school_q));
     schools = []
     for obj in school:
         schools.append({'id':obj[0], 'name':obj[1]})
+        
+    # username_q = 'SELECT user_id FROM users';
+    # username_db = g.conn.execute(text(username_q));
+    # username_lst = []
+    # for obj in username_db:
+    #     username_lst.append(obj)
+    
     username = request.form['username-user']
-    if username in users_db:
-        user_error = ["Username already exists! Try a different one"]
     password = request.form['password-user']
     verify_pass = request.form['verify-password-user']
     fname = request.form['firstname-user']
@@ -329,13 +325,17 @@ def add():
     interests = request.form.getlist('userinterests')
     if password != verify_pass:
         data = ["Passwords do not match! Try again..."]
-        return render_template('signup.html', data = data, schools = schools, user_error = user_error)
+        return render_template('signup.html', data = data, schools = schools)
     else:
         user_group = request.form['user_group']
         # print(fname, lname, contact_info, desc, interests, user_group)
         cmd = 'INSERT INTO user_tmp(user_id, password, first_name, last_name, contact_info, description, school_id, interests, user_group, skills, position, company_id) VALUES ((:username), (:password), (:fname), (:lname), (:contact_info), (:desc), (:school), (:interests), (:user_group), (:skills), (:position), (:company))';
-        g.conn.execute(text(cmd), username = username, password = password, fname = fname, lname = lname, contact_info = contact_info, desc = desc, school = school, interests = interests, user_group = user_group, skills = None, position = None, company = None);
-        
+        try:
+            g.conn.execute(text(cmd), username = username, password = password, fname = fname, lname = lname, contact_info = contact_info, desc = desc, school = school, interests = interests, user_group = user_group, skills = None, position = None, company = None);
+        except exc.IntegrityError:
+            user_error = ["Username already exists..Please choose a different one."]
+            return render_template('signup.html', user_error = user_error, schools = schools)
+    
         session['userid'] = username
         print("Session userid:", session['userid'])
         
