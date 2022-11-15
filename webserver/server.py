@@ -401,26 +401,26 @@ def student_signup():
         if company != None and pos != None:
             q_insert_skill = f"""
             INSERT INTO StudentInterestTemp(user_id, position_title, company_id) VALUES (
-                '{userid}',
-                '{pos}',
-                {company}
+                (:userid),
+                (:pos),
+                (:company)
             )
             """
 
             try:
-                g.conn.execute(q_insert_skill)
+                g.conn.execute(text(q_insert_skill), userid=userid, pos=pos, company=company)
             except:
                 pass
             
         if tool != None:
             q_insert_interest = f"""
             UPDATE user_tmp
-            SET skills = '{tool}'
-            WHERE user_id='{userid}'
+            SET skills = (:tool)
+            WHERE user_id=(:userid)
             """
 
             try:
-                g.conn.execute(q_insert_interest)
+                g.conn.execute(text(q_insert_interest), tool=tool, userid=userid)
             except:
                 pass
 
@@ -428,10 +428,10 @@ def student_signup():
         SELECT a.position_title, b.company_name
         FROM StudentInterestTemp a
         INNER JOIN Company b on a.company_id = b.company_id 
-        where user_id = '{userid}'
+        where user_id = (:userid)
         ;
         """
-        cursor = g.conn.execute(q_fetch_interest)
+        cursor = g.conn.execute(text(q_fetch_interest), userid=userid)
         recorded_interests= cursor.fetchall()
 
         return render_template("student_signup.html", form = form, recorded_interests=recorded_interests)
@@ -474,14 +474,14 @@ def employee_signup():
 
         q_insert_employee = f"""
         UPDATE user_tmp
-        SET position='{pos}',
-            company_id={company_id},
+        SET position=(:pos),
+            company_id=(:company_id),
             completed=true
-        WHERE user_id='{userid}'
+        WHERE user_id=(:userid)
         """
 
         try:
-            g.conn.execute(q_insert_employee)
+            g.conn.execute(text(q_insert_employee), userid=userid,company_id=company_id,pos=pos)
         except:
             pass
 
@@ -493,21 +493,21 @@ def employee_signup():
 @app.route("/save_interest", methods=['POST'])
 def save_interest():
 
-    user_id = request.form.get('user_id')
+    userid = request.form.get('user_id')
     pos = request.form.get('position_title')
     company = request.form.get('company_name')
 
     q_insert_skill = f"""
         INSERT INTO Student_Interest(student_id, position_title, company_id)
             select student_id,
-            '{pos}',
-            {company}
+            (:pos),
+            (:company)
             from users u
-            where user_id='{user_id}'
+            where user_id=(:userid)
     """
 
     try:
-        g.conn.execute(q_insert_skill)
+        g.conn.execute(text(q_insert_skill), pos=pos, company=company,userid=userid)
     except:
         pass
 
@@ -522,19 +522,19 @@ def complete_signup():
     # drop records in the user_tmp at various points in the funnel
     q_drop_check = f"""
         delete from user_tmp
-        where user_id = '{userid}'
+        where user_id = (:userid)
         ;
     """
 
     q_user_info = f"""
       UPDATE user_tmp
       SET completed=true
-      where user_id = '{userid}'
+      where user_id = (:userid)
     """
     try:
-        g.conn.execute(q_user_info)
+        g.conn.execute(text(q_user_info), userid=userid)
     except:
-        g.conn.execute(q_drop_check)
+        g.conn.execute(text(q_drop_check), userid=userid)
         flash("Registration did not go through :( ", "error")
         return redirect(request.referrer)
 
@@ -554,14 +554,14 @@ def complete_signup():
         , interests
         , password
       FROM user_tmp a
-      WHERE user_id = '{userid}' and completed=true
+      WHERE user_id = (:userid) and completed=true
       ;
     """
 
     try:
-        g.conn.execute(q_user_info)
+        g.conn.execute(text(q_user_info), userid=userid)
     except:
-        g.conn.execute(q_drop_check)
+        g.conn.execute(text(q_drop_check), userid=userid)
         flash("Registration did not go through :( ", "error")
         return redirect(request.referrer)
 
@@ -569,10 +569,10 @@ def complete_signup():
         SELECT
             user_group
         FROM user_tmp
-        WHERE user_id='{userid}' and completed=true
+        WHERE user_id=(:userid) and completed=true
     """
 
-    user_group = dict((g.conn.execute(q_group).fetchall())[0])['user_group']
+    user_group = dict((g.conn.execute(text(q_group),userid=userid).fetchall())[0])['user_group']
 
     if user_group=='Student':
         # first insert the record into student table
@@ -584,13 +584,13 @@ def complete_signup():
                 , a.user_id
             FROM USERS a
             INNER JOIN user_tmp b on a.user_id=b.user_id and b.completed=true
-            WHERE a.user_id='{userid}'
+            WHERE a.user_id=(:userid)
             ;
         """
         try:
-            g.conn.execute(q_student)
+            g.conn.execute(text(q_student), userid=userid)
         except:
-            g.conn.execute(q_drop_check)
+            g.conn.execute(text(q_drop_check), userid=userid)
             flash("Registration did not go through :( ", "error")
             return redirect(request.referrer)
 
@@ -603,13 +603,13 @@ def complete_signup():
                 , a.company_id
             FROM studentinteresttemp a
             INNER join student s on s.user_id=a.user_id
-            WHERE a.user_id='{userid}'
+            WHERE a.user_id=(:userid)
             ;
         """
         try:
-            g.conn.execute(q_student_interst)
+            g.conn.execute(text(q_student_interst), userid=userid)
         except:
-            g.conn.execute(q_drop_check)
+            g.conn.execute(text(q_drop_check), userid=userid)
             flash("Registration did not go through :( ", "error")
             return redirect(request.referrer)
 
@@ -627,18 +627,18 @@ def complete_signup():
                 , b.company_id
             FROM USERS a
             INNER JOIN user_tmp b on a.user_id=b.user_id and b.completed=true
-            WHERE a.user_id='{userid}'
+            WHERE a.user_id=(:userid)
             ;
         """
         try:
-            g.conn.execute(q_employee)
+            g.conn.execute(text(q_employee), userid=userid)
         except:
-            g.conn.execute(q_drop_check)
+            g.conn.execute(text(q_drop_check), userid=userid)
             flash("Registration did not go through :( ", "error")
             return redirect(request.referrer)
 
     # drop records in the user_tmp
-    g.conn.execute(q_drop_check)
+    g.conn.execute(text(q_drop_check), userid=userid)
 
     # finally check if the record has successfully been inserted to user table AND (student OR employee table)
     q_check_success=f"""
@@ -651,11 +651,11 @@ def complete_signup():
                 left join employee e on u.user_id = e.user_id
                 where (s.user_id is not null or e.user_id is not null)
                 )
-        and user_id = '{userid}'
+        and user_id = (:userid)
     """
 
     try:
-        g.conn.execute(q_check_success)
+        g.conn.execute(text(q_check_success), userid=userid)
         flash("Registration success!", "info")
     except:
         pass
@@ -685,11 +685,11 @@ def view_profile(user_id):
         left join student s on s.user_id = a.user_id
         left join employee e on e.user_id = a.user_id
         left join company c on c.company_id = e.company_id
-        where a.user_id='{user_id}'
+        where a.user_id=(:user_id)
         ;
     """
 
-    cursor = g.conn.execute(q_profile)
+    cursor = g.conn.execute(text(q_profile), user_id=user_id)
     data = dict(cursor.fetchall()[0])
     
 
@@ -707,10 +707,10 @@ def view_profile(user_id):
         inner join student b on a.user_id = b.user_id
         inner join student_interest c on b.student_id = c.student_id
         inner join company co on co.company_id = c.company_id
-        where a.user_id='{user_id}' and c.require_referral = true
+        where a.user_id=(:user_id) and c.require_referral = true
         """
 
-        cursor = g.conn.execute(q_student_interest)
+        cursor = g.conn.execute(text(q_student_interest),user_id=user_id)
         student_data = cursor.fetchall()
 
         data['interested_position'] = [(i[0],i[1],i[2]) for i in student_data]
@@ -721,7 +721,6 @@ def view_profile(user_id):
     else:
         data['user_group']="employee"
 
-        print(data)
         return render_template("profile_view_employee.html", data = data)
 
 
@@ -737,11 +736,11 @@ def send_like():
             u.student_id
             , (select employee_id from users where user_id='{employee_liked_userid}')
         from users u
-        where u.user_id='{userid}'
+        where u.user_id=(:userid)
     """
 
     try:
-        g.conn.execute(q_like)
+        g.conn.execute(text(q_like),userid=userid)
         flash('Like successfully sent!', 'info')
 
     except:
@@ -762,7 +761,7 @@ def refer():
 
     #check if the employee works at the same company as the interested company
     q_check = f"""select company_id from employee where user_id='{referrer_user_id}'"""
-    referrer_company = g.conn.execute(q_check).fetchall()[0][0]
+    referrer_company = g.conn.execute((q_check)).fetchall()[0][0]
 
     if int(referrer_company) != int(company_interested):
         flash(f"You can only refer students for positions in your company", "error")
@@ -772,27 +771,28 @@ def refer():
         INSERT INTO refer
         SELECT
             e.employee_id
-            , (select student_id from student where user_id = '{referee_user_id}')
-            , '{position_interested}'
-            , {company_interested}
+            , (select student_id from student where user_id = (:referee_user_id))
+            , (:position_interested)
+            , (:company_interested)
         FROM users u
         INNER join employee e on u.user_id = e.user_id
-        WHERE u.user_id='{referrer_user_id}'
+        WHERE u.user_id=(:referrer_user_id)
         ;
     """
 
     try:
-        g.conn.execute(q_refer)
+        g.conn.execute(text(q_refer),position_interested=position_interested,company_interested=company_interested, referrer_user_id=referrer_user_id,
+            referee_user_id=referee_user_id)
 
         q_reset_refer_require = f"""
             UPDATE student_interest
             SET require_referral = false
-            WHERE student_id in (select student_id from student where user_id = '{referee_user_id}')
-                and position_title = '{position_interested}'
-                and company_id = {company_interested}
+            WHERE student_id in (select student_id from student where user_id = (:referee_user_id))
+                and position_title = (:position_interested)
+                and company_id = (:company_interested)
         """
 
-        g.conn.execute(q_reset_refer_require)
+        g.conn.execute(text(q_reset_refer_require),referee_user_id=referee_user_id, position_interested=position_interested,company_interested=company_interested)
 
         flash("Your contact information has been sent to the student!", "info")
     except:
@@ -814,16 +814,16 @@ def save_profile():
 
     q_update_profile = f"""
         UPDATE Users
-        SET first_name='{first_name}'
-            , last_name='{last_name}'
-            , contact_info='{contact_info}'
-            , description='{description}'
-        WHERE user_id='{user_id}'
+        SET first_name=(:first_name)
+            , last_name=(:last_name)
+            , contact_info=(:contact_info)
+            , description=(:description)
+        WHERE user_id=(:user_id)
         ;
     """
 
     try:
-        g.conn.execute(q_update_profile)
+        g.conn.execute(text(q_update_profile),first_name=first_name, last_name=last_name, contact_info=contact_info, description=description, user_id=user_id)
     except:
         pass
 
@@ -860,11 +860,11 @@ def student_profile():
         left join student s on s.user_id = a.user_id
         left join employee e on e.user_id = a.user_id
         left join company c on c.company_id = e.company_id
-        where a.user_id='{user_id}'
+        where a.user_id=(:user_id)
         ;
     """
 
-    cursor = g.conn.execute(q_basic_info)
+    cursor = g.conn.execute(text(q_basic_info),user_id=user_id)
     profile_info = cursor.fetchall()
 
     q_refer_info = f"""
@@ -881,10 +881,10 @@ def student_profile():
                 r.company_id=i.company_id and
                 r.student_id=i.student_id
             left join users u on u.employee_id=r.employee_id
-            where s.user_id='{user_id}'
+            where s.user_id=(:user_id)
     """
 
-    cursor = g.conn.execute(q_refer_info)
+    cursor = g.conn.execute(text(q_refer_info),user_id=user_id)
     job_info = cursor.fetchall()
 
     return render_template("student_profile.html", profile_info=profile_info, job_info=job_info, form=form, user_id=user_id)
@@ -916,11 +916,11 @@ def employee_profile():
         left join student s on s.user_id = a.user_id
         left join employee e on e.user_id = a.user_id
         left join company c on c.company_id = e.company_id
-        where a.user_id='{user_id}'
+        where a.user_id=(:user_id)
         ;
     """
 
-    cursor = g.conn.execute(q_basic_info)
+    cursor = g.conn.execute(text(q_basic_info),user_id=user_id)
     profile_info = cursor.fetchall()
 
     q_refer_info = f"""
@@ -933,9 +933,9 @@ def employee_profile():
         inner join company c on r.company_id = c.company_id
         left join student s on s.student_id = r.student_id
         left join users u on u.user_id = s.user_id
-        where u_emp.user_id='{user_id}'
+        where u_emp.user_id=(:user_id)
         """
-    cursor = g.conn.execute(q_refer_info)
+    cursor = g.conn.execute(text(q_refer_info),user_id=user_id)
     job_info = cursor.fetchall()
 
 
@@ -950,9 +950,9 @@ def employee_profile():
         INNER JOIN student_like s on u.employee_id = s.employee_id
         INNER JOIN student us on us.student_id = s.student_id
         INNER JOIN users u2 on us.student_id = u2.student_id
-        WHERE u.user_id='{user_id}'
+        WHERE u.user_id=(:user_id)
         """
-    cursor = g.conn.execute(q_like_info)
+    cursor = g.conn.execute(text(q_like_info),user_id=user_id)
     like_info = cursor.fetchall()
 
     return render_template("employee_profile.html", profile_info = profile_info, job_info = job_info,
