@@ -873,7 +873,7 @@ def student_profile():
                 , co.company_name
                 , case when i.require_referral=true then false else true end as received_referral
                 , u.contact_info as employee_contact_info
-                , u.user_id
+                , case when u.user_id is null then '' else u.user_id end as user_id
             from student s
             inner join student_interest i on s.student_id = i.student_id
             inner join company co on co.company_id = i.company_id
